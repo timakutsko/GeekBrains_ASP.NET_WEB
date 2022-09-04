@@ -3,20 +3,16 @@ using WorkManager.DAL.Interfaces;
 
 namespace WorkManager.DAL.Models
 {
-    public class Employee : IPerson, IEmployee
+    public class Employee : PersonEntity
     {
-        public int Id { get; private set; }
+        /// <summary>
+        /// Размер з.п. сотрудника за 1 час
+        /// </summary>
+        public int HourSalary { get; set; }
 
-        public string FirstName { get; private set; }
-
-        public string LastName { get; private set; }
-
-        public string Email { get; private set; }
-
-        public int Age { get; private set; }
-
-        public int HourSalary { get; private set; }
-
-        public DateTimeOffset SpendingTime { get; private set; }
+        /// <summary>
+        /// Потраченное время сотрудника
+        /// </summary>
+        public TimeSpan SpendingTime { get; set; }
     }
 }

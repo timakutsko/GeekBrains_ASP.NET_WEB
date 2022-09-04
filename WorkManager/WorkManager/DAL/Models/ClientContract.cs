@@ -1,19 +1,12 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using WorkManager.DAL.Interfaces;
 
 namespace WorkManager.DAL.Models
 {
-    public class ClientContract : IClientContract
+    [Table("ClientContracts", Schema = "WorkManager")]
+    public class ClientContract : WorkResultEntity
     {
-        public int Id { get; private set; }
-
-        public DateTimeOffset FullTime { get; private set; }
-
-        public string Title { get; private set; }
-
-        public ClientContract()
-        {
-            // create contract must be here....
-        }
+        
     }
 }

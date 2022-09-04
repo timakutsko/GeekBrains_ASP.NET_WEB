@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,43 @@ namespace WorkManager.Controllers
     public class ClientController : Controller
     {
         private readonly ILogger<ClientController> _logger;
-        private ClientResponse _clientResponse = new ClientResponse();
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private ClientResponse _clientResponse;
 
-        public ClientController(ILogger<ClientController> logger)
+        public ClientController(ILogger<ClientController> logger, IServiceProvider provider)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientController).Name}");
+            
+            _provider = provider;
+            _clientResponse = provider.GetService<ClientResponse>();
+        }
+
+        /// <summary>
+        /// Создание нового килента
+        /// </summary>
+        /// <returns>Созданный клиент</returns>
+        [HttpPost("register")]
+        public IActionResult RegisterElement([FromBody] Client client)
+        {
+            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового клиента. Параметры:" +
+                $"\nId: {client.Id}" +
+                $"\nFirst name: {client.FirstName}" +
+                $"\nLast name: {client.LastName}" +
+                $"\nEmail: {client.Email}" +
+                $"\nAge: {client.Age}" +
+                $"\nCompany: {client.Company}");
+            
+            try
+            {
+                _clientResponse.Register(client);
+                return Ok($"Клиент {client.FirstName} {client.LastName} был создан!");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -28,11 +60,17 @@ namespace WorkManager.Controllers
 		[HttpGet("get")]
         public IActionResult GetElements()
         {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов. Параметры:...");
-           
-            IList<Client> allElements = _clientResponse.GetAllData();
-
-            return Ok();
+            _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов.");
+            
+            try 
+            {
+                IReadOnlyDictionary<int, Client> resp = _clientResponse.GetAllData();
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -49,7 +87,6 @@ namespace WorkManager.Controllers
             try
             {
                 Client currentElement = _clientResponse.GetById(id);
-                
                 return Ok(currentElement);
             }
             catch (Exception ex)
@@ -59,35 +96,21 @@ namespace WorkManager.Controllers
         }
 
         /// <summary>
-        /// Создание нового килента
-        /// </summary>
-        /// <returns>Созданный клиент</returns>
-        [HttpPost("register")]
-        public IActionResult RegisterElement()
-        {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового клиента. Параметры:...");
-
-            Client newElement = _clientResponse.Register();
-
-            return Ok(newElement);
-        }
-
-        /// <summary>
         /// Обновление клиента по id
         /// </summary>
         /// <returns>Обновленный клиент</returns>
-        [HttpPut("update/{id}")]
-        public IActionResult UpdateById([FromRoute] int id)
+        [HttpPut("update/{id}/{reqColumnName}/{value}")]
+        public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода обновления клиента по id. Параметры:" +
-                $"id = {id}"
-                );
+                $"\nId для обновления: {id}" +
+                $"\nИмя парамтера для обновления: {reqColumnName}" +
+                $"\nЗначение для обновления: {value}");
 
             try
             {
-                Client updateElementt = _clientResponse.UpdateById(id);
-
-                return Ok(updateElementt);
+                _clientResponse.UpdateById(id, reqColumnName, value);
+                return Ok($"Клиенту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {
@@ -99,7 +122,7 @@ namespace WorkManager.Controllers
         /// Удаление клиента по id
         /// </summary>
         /// <returns>Сообщение об удалении</returns>
-        [HttpPut("delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteById([FromRoute] int id)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода удаления клиента по id. Параметры:" +
@@ -109,8 +132,7 @@ namespace WorkManager.Controllers
             try
             {
                 _clientResponse.DeleteById(id);
-                
-                return Ok("Client have been deleted!");
+                return Ok($"Клиент с id {id} был успешно удален!");
             }
             catch (Exception ex)
             {

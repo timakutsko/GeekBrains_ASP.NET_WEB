@@ -1,19 +1,49 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using WorkManager.DAL.Interfaces;
 using WorkManager.DAL.Models;
-using WorkManager.WorkManagerExceptions;
+using WorkManager.Repositories.Interfaces;
 
 namespace WorkManager.Responses
 {
     public class ClientResponse
     {
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private readonly IRepository<int, Client> _repository;
+
+        public ClientResponse(IServiceProvider provider)
+        {
+            _provider = provider;
+            _repository = _provider.GetService<IRepository<int, Client>>();
+        }
+
+        /// <summary>
+        /// Создание клиента в ответ серверу
+        /// </summary>
+        public void Register(Client entity)
+        {
+            if (!_repository.Create(entity))
+            {
+                throw new Exception("Can't create a person. Check out input data");
+            }
+        }
+
         /// <summary>
         /// Создание списка всех клиентов в ответ серверу
         /// </summary>
-        public IList<Client> GetAllData()
+        public IReadOnlyDictionary<int, Client> GetAllData()
         {
-            IList<Client> allElems = new List<Client>();
-            return allElems;
+            IReadOnlyDictionary<int, Client> allElems = _repository.Get();
+            if (allElems != null)
+            {
+                return allElems;
+            }
+            else
+            {
+                throw new Exception("Bad request to repo.");
+            }
         }
 
         /// <summary>
@@ -21,32 +51,25 @@ namespace WorkManager.Responses
         /// </summary>
         public Client GetById(int id)
         {
-            //stub without logic
-            Client client = SearchClientContractById(id);
-            if (client != null)
+            Client entity = _repository.GetById(id);
+            if (entity != null)
             {
-                return client;
+                return entity;
             }
             else
             {
-                throw new ClientNotFoundException(id.ToString());
+                throw new Exception($"Client with id: {id} not found. Maybe it's dosen't exsist?");
             }
         }
 
         /// <summary>
         /// Обновление клиента в ответ серверу
         /// </summary>
-        public Client UpdateById(int id)
+        public void UpdateById(int id, string reqColumnName, string value)
         {
-            //stub without logic
-            Client client = SearchClientContractById(id);
-            if (client != null)
+            if (!_repository.UpdateById(id, reqColumnName, value))
             {
-                return client;
-            }
-            else
-            {
-                throw new ClientNotFoundException(id.ToString());
+                throw new Exception($"Client with id: {id} can not update! Maybe it's dosen't exsist or input params are faild?");
             }
         }
 
@@ -55,28 +78,9 @@ namespace WorkManager.Responses
         /// </summary>
         public void DeleteById(int id)
         {
-            //stub without logic
-        }
-
-        /// <summary>
-        /// Создание клиента в ответ серверу
-        /// </summary>
-        public Client Register()
-        {
-            Client registerElement = new Client();
-            return registerElement;
-        }
-
-        private Client SearchClientContractById(int id)
-        {
-            //stub without logic
-            if (id != 1)
+            if (!_repository.DeleteById(id))
             {
-                return new Client();
-            }
-            else
-            {
-                return null;
+                throw new Exception($"Client with id: {id} can not delete! Maybe it's dosen't exsist?");
             }
         }
     }

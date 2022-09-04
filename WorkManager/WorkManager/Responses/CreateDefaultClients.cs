@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using WorkManager.DAL.Models;
 using WorkManager.DAL.Repositories;
+using WorkManager.DAL.Repositories.Contexts;
 using WorkManager.MySQLsettings;
 
 namespace WorkManager.Responses
 {
     public class CreateDefaultClients
     {
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private ClientDbContext _personDbContext;
+
         /// <summary>
         /// Список клиентов и компаний
         /// </summary>
@@ -63,13 +70,20 @@ namespace WorkManager.Responses
             new Client { Id =49, FirstName ="Jenette", LastName="Dejesus", Email = "adipiscing.Mauris.molestie@liberoduinec.ca", Company="Lectus Justo Incorporated", Age =56},
             new Client { Id =50, FirstName ="Ramona", LastName="Gilliam", Email = "massa.Vestibulum@lectuspede.ca", Company ="ImperdietDictum LLP", Age =24},
         };
-        
+
+        public CreateDefaultClients(IServiceProvider provider)
+        {
+            _provider = provider;
+            _personDbContext = provider.GetService<ClientDbContext>();
+        }
+
         public void Create()
         {
-            ClientsRepository clientsRepository = new ClientsRepository(new MySqlClients());
+            ClientsRepository clientsRepository = new ClientsRepository(_personDbContext);
 
             foreach (Client client in _clients)
             {
+                client.IsDeleted = false;
                 clientsRepository.Create(client);
             }
         }

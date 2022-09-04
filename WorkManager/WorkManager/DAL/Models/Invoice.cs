@@ -1,14 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using WorkManager.DAL.Interfaces;
 
 namespace WorkManager.DAL.Models
 {
-    public class Invoice : IInvoice
+    public class Invoice : WorkResultEntity
     {
-        public int Id { get; private set; }
+        public int Price { get; set; }
 
-        public int Price { get; private set; }
-
-        public ClientContract CurrentContract { get; private set; }
+        public List<ClientContract> CurrentContracts { get; set; }
     }
 }

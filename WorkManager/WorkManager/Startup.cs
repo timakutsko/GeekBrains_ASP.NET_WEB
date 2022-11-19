@@ -1,19 +1,20 @@
 using FluentMigrator.Runner;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using WorkManager.DAL.Models;
+using System.Text;
 using WorkManager.DAL.Repositories;
-using WorkManager.DAL.Repositories.Contexts;
+using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Data.Contexts;
+using WorkManager.Data.Models;
 using WorkManager.MySQLsettings;
-using WorkManager.Repositories.Interfaces;
 using WorkManager.Responses;
 
 namespace WorkManager
@@ -30,41 +31,102 @@ namespace WorkManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
             services.AddControllersWithViews();
+            // Настройка DB Context
+            services.AddDbContext<WorkManagerDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("WorkManagerDbContext"));
+            });
 
             // Добавление исходных клиентов
-            services.AddSingleton<CreateDefaultClients>();
-            
+            services.AddScoped<CreateDefaultClients>();
+
+            // Работа с пользователями
+            services.AddScoped<UserResponse>();
+            services.AddScoped<IUserRepository, UsersRepository>();
+
             // Работа с клиентами
-            services.AddSingleton<ClientResponse>();
-            services.AddSingleton<ClientDbContext>();
-            services.AddSingleton<IRepository<int, Client>, ClientsRepository>();
+            services.AddScoped<ClientResponse>();
+            services.AddScoped<IRepository<int, Client>, ClientsRepository>();
 
             // Работа с контрактами
-            services.AddSingleton<ClientContractResponse>();
-            services.AddSingleton<ClientContractDbContext>();
-            services.AddSingleton<IRepository<int, ClientContract>, ClientContractsRepository>();
+            services.AddScoped<ClientContractResponse>();
+            services.AddScoped<IRepository<int, ClientContract>, ClientContractsRepository>();
 
             // Работа с отчетами
-            services.AddSingleton<InvoiceResponse>();
-            services.AddSingleton<InvoiceDbContext>();
-            services.AddSingleton<IRepository<int, Invoice>, InvoicesRepository>();
+            services.AddScoped<InvoiceResponse>();
+            services.AddScoped<IRepository<int, Invoice>, InvoicesRepository>();
 
             // Работа с сотрудниками
-            services.AddSingleton<EmployeeResponse>();
-            services.AddSingleton<EmployeeDbContext>();
-            services.AddSingleton<IRepository<int, Employee>, EmployeesRepository>();
+            services.AddScoped<EmployeeResponse>();
+            services.AddScoped<IRepository<int, Employee>, EmployeesRepository>();
 
-            // Настриваю миграцию БД
-            services.AddSingleton<IMySqlSettings<Tables, ClientsColumns>, MySqlClients>();
-            services.AddSingleton<IMySqlSettings<Tables, ClientContractsColumns>, MySqlClientContracts>();
-            services.AddSingleton<IMySqlSettings<Tables, InvoicesColumns>, MySqlInvoices>();
-            services.AddSingleton<IMySqlSettings<Tables, EmployeesColumns>, MySqlEmployees>();
+            // Настриваю миграцию БД - работа с отчетами
+            services.AddScoped<IMySqlSettings<MyTables, ClientsColumns>, SqlClientsTable>();
+            services.AddScoped<IMySqlSettings<MyTables, ClientContractsColumns>, SqlClientContractsTable>();
+            services.AddScoped<IMySqlSettings<MyTables, InvoicesColumns>, SqlInvoicesTable>();
+            services.AddScoped<IMySqlSettings<MyTables, EmployeesColumns>, SqlEmployeesTable>();
+
+            // Настриваю миграцию БД - работа с пользователями сервиса
+            services.AddScoped<IMySqlSettings<MyTables, UsersColumns>, SqlUsersTable>();
+
             services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb.AddSQLite() // Добавляем поддержку SQLite
-                    .WithGlobalConnectionString(MySqlTables.ConnectionString) // Устанавливаем строку подключения
+                    .WithGlobalConnectionString(SqlTables.ConnectionString) // Устанавливаем строку подключения
                     .ScanIn(typeof(Startup).Assembly).For.Migrations()) // Подсказываем, где искать класс с миграциями
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
+
+
+            // Настройка аутентификации
+            services.AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UserResponse.SecretCode)),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
+
+            //Настройка swagger
+            services.AddSwaggerGen(c =>
+                {
+                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WorkManager", Version = "v1" });
+                    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                    {
+                        Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.ApiKey,
+                        Scheme = "Bearer"
+                    });
+                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,12 +142,27 @@ namespace WorkManager
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASD v1");
+                c.RoutePrefix = string.Empty;
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseCors(x => x
+                .SetIsOriginAllowed(origin => true)
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+
+            app.UseAuthentication();    // аутентификация
+            app.UseAuthorization();     // авторизация
 
             app.UseEndpoints(endpoints =>
             {
@@ -93,9 +170,6 @@ namespace WorkManager
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            // Создаю БД запуском миграции
-            migrationRunner.MigrateUp();
         }
     }
 }

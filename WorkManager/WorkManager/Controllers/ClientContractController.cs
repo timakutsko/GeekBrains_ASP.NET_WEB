@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
 {
     [ApiController]
+    //[Authorize]
     [Route("api/contracts")]
     public class ClientContractController : Controller
     {
         private readonly ILogger<ClientContractController> _logger;
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
-        private ClientContractResponse _clientContractResponse;
+        private ClientContractResponse _response;
 
         public ClientContractController(ILogger<ClientContractController> logger, IServiceProvider provider)
         {
@@ -24,7 +25,7 @@ namespace WorkManager.Controllers
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientContractController).Name}");
 
             _provider = provider;
-            _clientContractResponse = provider.GetService<ClientContractResponse>();
+            _response = provider.GetService<ClientContractResponse>();
         }
 
         /// <summary>
@@ -41,27 +42,27 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientContractResponse.Register(clientContract);
+                _response.Register(clientContract);
                 return Ok($"Контракт {clientContract.Title} был создан!");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-    }
+        }
 
         /// <summary>
 		/// Запрос списка контрактов
 		/// </summary>
 		/// <returns>Список кантрактов</returns>
-		[HttpGet("get")]
+        [HttpGet("get")]
         public IActionResult GetElements()
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех контрактов. Параметры:...");
 
             try
             {
-                IReadOnlyDictionary<int, ClientContract> resp = _clientContractResponse.GetAllData();
+                IReadOnlyDictionary<int, ClientContract> resp = _response.GetAllData();
                 return Ok(resp);
             }
             catch (Exception ex)
@@ -83,8 +84,8 @@ namespace WorkManager.Controllers
 
             try
             {
-                ClientContract currentElement = _clientContractResponse.GetById(id);
-                
+                ClientContract currentElement = _response.GetById(id);
+
                 return Ok(currentElement);
             }
             catch (Exception ex)
@@ -107,7 +108,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientContractResponse.UpdateById(id, reqColumnName, value);
+                _response.UpdateById(id, reqColumnName, value);
                 return Ok($"Контракту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
@@ -129,8 +130,8 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientContractResponse.DeleteById(id);
-                
+                _response.DeleteById(id);
+
                 return Ok($"Контракт с id{id} был успешно удален!");
             }
             catch (Exception ex)

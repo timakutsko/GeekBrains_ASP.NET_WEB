@@ -1,11 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using WorkManager.DAL.Interfaces;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WorkManager.DAL.Models
+namespace WorkManager.DAL.Models.Archive
 {
-    [Table("Clients", Schema = "WorkManager")]
-    public class Client : PersonEntity
+    [Table("Clients", Schema = "WorkManager_v2")]
+    public sealed class Client : PersonEntity
     {
         //public ClientContract ClientContract { get; private set; }
 

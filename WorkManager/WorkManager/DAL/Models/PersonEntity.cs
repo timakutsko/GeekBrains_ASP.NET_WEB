@@ -1,4 +1,4 @@
-﻿namespace WorkManager.DAL.Models
+﻿namespace WorkManager.DAL.Models.Archive
 {
     public class PersonEntity
     {

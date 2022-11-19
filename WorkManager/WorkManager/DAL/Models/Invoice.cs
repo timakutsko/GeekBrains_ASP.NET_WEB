@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
+﻿using System.Collections.Generic;
 
-namespace WorkManager.DAL.Models
+namespace WorkManager.DAL.Models.Archive
 {
-    public class Invoice : WorkResultEntity
+    public sealed class Invoice : WorkResultEntity
     {
         public int Price { get; set; }
 

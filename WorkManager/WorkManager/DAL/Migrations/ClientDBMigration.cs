@@ -1,8 +1,8 @@
 ﻿using FluentMigrator;
-using WorkManager.MySQLsettings;
 using System;
+using WorkManager.MySQLsettings;
 
-namespace WorkManager.DAL.Migrations
+namespace WorkManager.DAL.Migrations.Archive
 {
 	// имена таблиц
 	[Migration(1)]
@@ -11,16 +11,16 @@ namespace WorkManager.DAL.Migrations
 		/// <summary>
 		/// Объект с именами и настройками базы данных
 		/// </summary>
-		private readonly IMySqlSettings<Tables, ClientsColumns> mySql;
+		private readonly IMySqlSettings<MyTables, ClientsColumns> mySql;
 
-		public ClientDBMigration(IMySqlSettings<Tables, ClientsColumns> mySqlSettings)
+		public ClientDBMigration(IMySqlSettings<MyTables, ClientsColumns> mySqlSettings)
 		{
 			mySql = mySqlSettings;
 		}
 
 		public override void Up()
 		{
-			Create.Table(mySql[Tables.Clients])
+			Create.Table(mySql[MyTables.Clients])
 				.WithColumn(mySql[ClientsColumns.Id]).AsInt64().PrimaryKey().Identity()
 				.WithColumn(mySql[ClientsColumns.FirstName]).AsString()
 				.WithColumn(mySql[ClientsColumns.LastName]).AsString()
@@ -32,7 +32,7 @@ namespace WorkManager.DAL.Migrations
 
 		public override void Down()
 		{
-			foreach (Tables tableName in Enum.GetValues(typeof(Tables)))
+			foreach (MyTables tableName in Enum.GetValues(typeof(MyTables)))
 			{
 				Delete.Table(mySql[tableName]);
 			}

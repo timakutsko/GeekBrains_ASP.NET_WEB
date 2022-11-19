@@ -1,116 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using WorkManager.DAL.Models;
-using WorkManager.DAL.Repositories.Contexts;
-using WorkManager.MySQLsettings;
-using WorkManager.Repositories.Interfaces;
+using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Data.Contexts;
+using WorkManager.Data.Models;
 
 namespace WorkManager.DAL.Repositories
 {
-    public class ClientsRepository : IRepository<int, Client>
+    internal sealed class ClientsRepository : IRepository<int, Client>
     {
         /// <summary>
         /// Контекст БД
         /// </summary>
-        private readonly ClientDbContext _context;
+        private readonly WorkManagerDbContext _context;
 
-
-        public ClientsRepository(ClientDbContext dbContext)
+        public ClientsRepository(WorkManagerDbContext dbContext)
         {
             _context = dbContext;
         }
 
         public bool Create(Client entity)
         {
-            try
-            {
-                _context.Add(entity);
-                _context.SaveChanges();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            _context.Clients.Add(entity);
+            _context.SaveChanges();
+            return true;
         }
 
         public IReadOnlyDictionary<int, Client> Get()
         {
-            try
-            {
-                // Подгружаю элементы из БД
-                IEnumerable<Client> entityColl = _context
-                    .Clients
-                    .Where(c => c.IsDeleted == false)
-                    .AsEnumerable();
+            // Подгружаю элементы из БД
+            IEnumerable<Client> entityColl = _context
+                .Clients
+                .Where(c => c.IsDeleted == false)
+                .AsEnumerable();
 
-                Dictionary<int, Client> entitysIndex = entityColl
-                    .ToDictionary(c => c.Id, c => c);
+            Dictionary<int, Client> entitysIndex = entityColl
+                .ToDictionary(c => c.Id, c => c);
 
-                IReadOnlyDictionary<int, Client> result = entitysIndex;
-                return result;
-            }
-            catch
-            {
-                return null;
-            }
+            IReadOnlyDictionary<int, Client> result = entitysIndex;
+            return result;
         }
 
         public Client GetById(int id)
         {
-            try
-            {
-                return _context.Clients.SingleOrDefault(c => c.Id == id);
-            }
-            catch
-            {
-                return null;
-            }
+            return _context.Clients.SingleOrDefault(c => c.Id == id);
         }
 
         public bool UpdateById(int id, string reqColumnName, string value)
         {
-            try
+            Client entity = GetById(id);
+            if (entity != null)
             {
-                Client entity = _context.Clients.SingleOrDefault(c => c.Id == id);
-                foreach (ClientsColumns column in Enum.GetValues(typeof(ClientsColumns)))
+                PropertyInfo prop = entity.GetType().GetProperty(reqColumnName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null && prop.CanWrite)
                 {
-                    string dbColumnName = _context.MySqlSettings[column];
-                    if (dbColumnName == reqColumnName)
-                    {
-                        PropertyInfo prop = entity.GetType().GetProperty(dbColumnName, BindingFlags.Public | BindingFlags.Instance);
-                        if (null != prop && prop.CanWrite)
-                        {
-                            prop.SetValue(entity, value, null);
-                            _context.Update(entity);
-                            _context.SaveChanges();
-                            return true;
-                        }
-                    }
+                    prop.SetValue(entity, value, null);
+                    _context.Update(entity);
+                    _context.SaveChanges();
+                    return true;
                 }
                 return false;
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool DeleteById(int id)
         {
-            try
+            Client entity = GetById(id);
+            if (entity != null)
             {
-                Client entity = _context.Clients.SingleOrDefault(c => c.Id == id);
-                _context.Remove(entity);
+                entity.IsDeleted = true;
+                _context.Update(entity);
                 _context.SaveChanges();
                 return true;
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace WorkManager.Models
 {
-    public class ErrorViewModel
+    internal sealed class ErrorViewModel
     {
         public string RequestId { get; set; }
 

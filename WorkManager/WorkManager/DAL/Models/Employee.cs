@@ -1,9 +1,10 @@
 ﻿using System;
-using WorkManager.DAL.Interfaces;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WorkManager.DAL.Models
+namespace WorkManager.DAL.Models.Archive
 {
-    public class Employee : PersonEntity
+    [Table("ClientContracts", Schema = "WorkManager")]
+    public sealed class Employee : PersonEntity
     {
         /// <summary>
         /// Размер з.п. сотрудника за 1 час

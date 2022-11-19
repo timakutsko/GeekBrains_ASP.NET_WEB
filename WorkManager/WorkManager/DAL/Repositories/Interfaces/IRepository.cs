@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WorkManager.Repositories.Interfaces
+namespace WorkManager.DAL.Repositories.Interfaces
 {
     public interface IRepository<TIdentity, TEntity> where TEntity : class where TIdentity : struct
     {
@@ -11,7 +11,7 @@ namespace WorkManager.Repositories.Interfaces
         bool Create(TEntity entity);
 
         /// <summary>
-        /// Возвращает все элеменыиз БД
+        /// Возвращает все элементы из БД
         /// </summary>
         /// <returns>Коллекция элементов</returns>
         IReadOnlyDictionary<TIdentity, TEntity> Get();
@@ -31,7 +31,7 @@ namespace WorkManager.Repositories.Interfaces
         bool UpdateById(TIdentity id, string reqColumnName, string value);
 
         /// <summary>
-        /// Удаляет элемент из БД
+        /// Удаляет элемент из БД (точнее - архивирует)
         /// </summary>
         /// <param name="id">Идентификатор элемента</param>
         bool DeleteById(TIdentity id);

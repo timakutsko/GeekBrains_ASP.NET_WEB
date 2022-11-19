@@ -1,6 +1,6 @@
 ﻿using WorkManager.DAL.Models;
 
-namespace WorkManager.DAL.Interfaces
+namespace WorkManager.DAL.Interfaces.Archive
 {
     public interface IClient
     {

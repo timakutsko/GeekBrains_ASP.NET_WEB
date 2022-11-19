@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
-using WorkManager.Repositories.Interfaces;
+using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Data.Models;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Responses
 {
-    public class ClientResponse
+    internal sealed class ClientResponse : ICrudById<Client>, ICrudAllData<Client>
     {
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
@@ -16,12 +16,9 @@ namespace WorkManager.Responses
         public ClientResponse(IServiceProvider provider)
         {
             _provider = provider;
-            _repository = _provider.GetService<IRepository<int, Client>>();
+            _repository = provider.GetService<IRepository<int, Client>>();
         }
 
-        /// <summary>
-        /// Создание клиента в ответ серверу
-        /// </summary>
         public void Register(Client entity)
         {
             if (!_repository.Create(entity))
@@ -30,9 +27,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Создание списка всех клиентов в ответ серверу
-        /// </summary>
         public IReadOnlyDictionary<int, Client> GetAllData()
         {
             IReadOnlyDictionary<int, Client> allElems = _repository.Get();
@@ -46,9 +40,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Передача клиента в ответ серверу
-        /// </summary>
         public Client GetById(int id)
         {
             Client entity = _repository.GetById(id);
@@ -62,9 +53,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Обновление клиента в ответ серверу
-        /// </summary>
         public void UpdateById(int id, string reqColumnName, string value)
         {
             if (!_repository.UpdateById(id, reqColumnName, value))
@@ -73,9 +61,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Удаление клиента в ответ серверу
-        /// </summary>
         public void DeleteById(int id)
         {
             if (!_repository.DeleteById(id))

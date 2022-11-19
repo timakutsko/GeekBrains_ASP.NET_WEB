@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkManager.DAL.Models
+namespace WorkManager.DAL.Models.Archive
 {
     public class WorkResultEntity
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WorkManager.DAL.Interfaces
+namespace WorkManager.DAL.Interfaces.Archive
 {
     public interface IEmployee
     {

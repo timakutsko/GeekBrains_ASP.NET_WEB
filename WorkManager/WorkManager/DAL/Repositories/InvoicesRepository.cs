@@ -1,101 +1,82 @@
-﻿using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using WorkManager.DAL.Models;
-using WorkManager.DAL.Repositories.Contexts;
-using WorkManager.MySQLsettings;
-using WorkManager.Repositories.Interfaces;
+using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Data.Contexts;
+using WorkManager.Data.Models;
 
 namespace WorkManager.DAL.Repositories
 {
-	public class InvoicesRepository : IRepository<int, Invoice>
-	{
-		/// <summary>
-		/// Контекст БД
-		/// </summary>
-		private readonly InvoiceDbContext _context;
+    internal sealed class InvoicesRepository : IRepository<int, Invoice>
+    {
+        /// <summary>
+        /// Контекст БД
+        /// </summary>
+        private readonly WorkManagerDbContext _context;
 
+        public InvoicesRepository(WorkManagerDbContext dbContext)
+        {
+            _context = dbContext;
+        }
 
-		public InvoicesRepository(InvoiceDbContext dbContext)
-		{
-			_context = dbContext;
-		}
-
-		public bool Create(Invoice entity)
-		{
-			try
-			{
-				_context.Add(entity);
-				_context.SaveChanges();
-				return true;
-			}
-			catch
-			{
-				return false;
-			}
-		}
+        public bool Create(Invoice entity)
+        {
+            _context.Invoices.Add(entity);
+            _context.SaveChanges();
+            return true;
+        }
 
         public IReadOnlyDictionary<int, Invoice> Get()
-		{
-			try
-			{
-				// Подгружаю элементы из БД
-				IEnumerable<Invoice> entityColl = _context
-					.Invoices
-					.Where(c => c.IsDeleted == false)
-					.AsEnumerable();
+        {
+            // Подгружаю элементы из БД
+            IEnumerable<Invoice> entityColl = _context
+                .Invoices
+                .Where(c => c.IsDeleted == false)
+                .AsEnumerable();
 
-				Dictionary<int, Invoice> entitysIndex = entityColl
-					.ToDictionary(c => c.Id, c => c);
+            Dictionary<int, Invoice> entitysIndex = entityColl
+                .ToDictionary(c => c.Id, c => c);
 
-				IReadOnlyDictionary<int, Invoice> result = entitysIndex;
-				return result;
-			}
-			catch
-			{
-				return null;
-			}
-		}
+            IReadOnlyDictionary<int, Invoice> result = entitysIndex;
+            return result;
+        }
 
         public Invoice GetById(int id)
         {
-            throw new NotImplementedException();
+            return _context.Invoices.SingleOrDefault(c => c.Id == id);
         }
 
         public bool UpdateById(int id, string reqColumnName, string value)
-		{
-			try
-			{
-				Invoice entity = _context.Invoices.SingleOrDefault(c => c.Id == id);
-				foreach (InvoicesColumns column in Enum.GetValues(typeof(InvoicesColumns)))
-				{
-					string dbColumnName = _context.MySqlSettings[column];
-					if (dbColumnName == reqColumnName)
-					{
-						PropertyInfo prop = entity.GetType().GetProperty(dbColumnName, BindingFlags.Public | BindingFlags.Instance);
-						if (null != prop && prop.CanWrite)
-						{
-							prop.SetValue(entity, value, null);
-							_context.Update(entity);
-							_context.SaveChanges();
-							return true;
-						}
-					}
-				}
-				return false;
-			}
-			catch
-			{
-				return false;
-			}
-		}
+        {
+            Invoice entity = GetById(id);
+            if (entity != null)
+            {
+                PropertyInfo prop = entity.GetType().GetProperty(reqColumnName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null && prop.CanWrite)
+                {
+                    prop.SetValue(entity, value, null);
+                    _context.Update(entity);
+                    _context.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
 
-		public bool DeleteById(int id)
-		{
-			throw new NotImplementedException();
-		}
-	}
+            return false;
+        }
+
+        public bool DeleteById(int id)
+        {
+            Invoice entity = GetById(id);
+            if (entity != null)
+            {
+                entity.IsDeleted = true;
+                _context.Update(entity);
+                _context.SaveChanges();
+                return true;
+            }
+
+            return false;
+        }
+    }
 }

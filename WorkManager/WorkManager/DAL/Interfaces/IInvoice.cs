@@ -1,9 +1,9 @@
 ﻿using System;
-using WorkManager.DAL.Models;
+using WorkManager.DAL.Models.Archive;
 
-namespace WorkManager.DAL.Interfaces
+namespace WorkManager.DAL.Interfaces.Archive
 {
-    public interface IInvoice
+    internal interface IInvoice
     {
         /// <summary>
         /// Id счета

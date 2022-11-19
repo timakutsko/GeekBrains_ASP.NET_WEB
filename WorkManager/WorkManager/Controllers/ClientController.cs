@@ -3,13 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
 {
     [ApiController]
+    //[Authorize]
     [Route("api/clients")]
     public class ClientController : Controller
     {
@@ -17,14 +17,16 @@ namespace WorkManager.Controllers
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
         private ClientResponse _clientResponse;
+        private UserResponse _userResponse;
 
         public ClientController(ILogger<ClientController> logger, IServiceProvider provider)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientController).Name}");
-            
+
             _provider = provider;
             _clientResponse = provider.GetService<ClientResponse>();
+            _userResponse = provider.GetService<UserResponse>();
         }
 
         /// <summary>
@@ -41,7 +43,7 @@ namespace WorkManager.Controllers
                 $"\nEmail: {client.Email}" +
                 $"\nAge: {client.Age}" +
                 $"\nCompany: {client.Company}");
-            
+
             try
             {
                 _clientResponse.Register(client);
@@ -57,12 +59,12 @@ namespace WorkManager.Controllers
 		/// Запрос списка клиентов
 		/// </summary>
 		/// <returns>Список клиентов</returns>
-		[HttpGet("get")]
+        [HttpGet("get")]
         public IActionResult GetElements()
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов.");
-            
-            try 
+
+            try
             {
                 IReadOnlyDictionary<int, Client> resp = _clientResponse.GetAllData();
                 return Ok(resp);

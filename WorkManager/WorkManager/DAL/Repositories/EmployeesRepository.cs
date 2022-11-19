@@ -1,116 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using WorkManager.DAL.Models;
-using WorkManager.DAL.Repositories.Contexts;
-using WorkManager.MySQLsettings;
-using WorkManager.Repositories.Interfaces;
+using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Data.Contexts;
+using WorkManager.Data.Models;
 
 namespace WorkManager.DAL.Repositories
 {
-    public class EmployeesRepository : IRepository<int, Employee>
+    internal sealed class EmployeesRepository : IRepository<int, Employee>
     {
         /// <summary>
         /// Контекст БД
         /// </summary>
-        private readonly EmployeeDbContext _context;
+        private readonly WorkManagerDbContext _context;
 
 
-        public EmployeesRepository(EmployeeDbContext dbContext)
+        public EmployeesRepository(WorkManagerDbContext dbContext)
         {
             _context = dbContext;
         }
 
         public bool Create(Employee entity)
         {
-            try
-            {
-                _context.Add(entity);
-                _context.SaveChanges();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            _context.Employees.Add(entity);
+            _context.SaveChanges();
+            return true;
         }
 
         public IReadOnlyDictionary<int, Employee> Get()
         {
-            try
-            {
-                // Подгружаю элементы из БД
-                IEnumerable<Employee> entityColl = _context
-                    .Employees
-                    .Where(c => c.IsDeleted == false)
-                    .AsEnumerable();
+            // Подгружаю элементы из БД
+            IEnumerable<Employee> entityColl = _context
+                .Employees
+                .Where(c => c.IsDeleted == false)
+                .AsEnumerable();
 
-                Dictionary<int, Employee> entitysIndex = entityColl
-                    .ToDictionary(c => c.Id, c => c);
+            Dictionary<int, Employee> entitysIndex = entityColl
+                .ToDictionary(c => c.Id, c => c);
 
-                IReadOnlyDictionary<int, Employee> result = entitysIndex;
-                return result;
-            }
-            catch
-            {
-                return null;
-            }
+            IReadOnlyDictionary<int, Employee> result = entitysIndex;
+            return result;
         }
 
         public Employee GetById(int id)
         {
-            try
-            {
-                return _context.Employees.SingleOrDefault(c => c.Id == id);
-            }
-            catch
-            {
-                return null;
-            }
+            return _context.Employees.SingleOrDefault(c => c.Id == id);
         }
 
         public bool UpdateById(int id, string reqColumnName, string value)
         {
-            try
+            Employee entity = GetById(id);
+            if (entity != null)
             {
-                Employee entity = _context.Employees.SingleOrDefault(c => c.Id == id);
-                foreach (EmployeesColumns column in Enum.GetValues(typeof(EmployeesColumns)))
+                PropertyInfo prop = entity.GetType().GetProperty(reqColumnName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null && prop.CanWrite)
                 {
-                    string dbColumnName = _context.MySqlSettings[column];
-                    if (dbColumnName == reqColumnName)
-                    {
-                        PropertyInfo prop = entity.GetType().GetProperty(dbColumnName, BindingFlags.Public | BindingFlags.Instance);
-                        if (null != prop && prop.CanWrite)
-                        {
-                            prop.SetValue(entity, value, null);
-                            _context.Update(entity);
-                            _context.SaveChanges();
-                            return true;
-                        }
-                    }
+                    prop.SetValue(entity, value, null);
+                    _context.Update(entity);
+                    _context.SaveChanges();
+                    return true;
                 }
                 return false;
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool DeleteById(int id)
         {
-            try
+            Employee entity = GetById(id);
+            if (entity != null)
             {
-                Employee entity = _context.Employees.SingleOrDefault(c => c.Id == id);
-                _context.Remove(entity);
+                entity.IsDeleted = true;
+                _context.Update(entity);
                 _context.SaveChanges();
                 return true;
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }

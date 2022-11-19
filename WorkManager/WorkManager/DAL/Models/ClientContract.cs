@@ -1,12 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using WorkManager.DAL.Interfaces;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WorkManager.DAL.Models
+namespace WorkManager.DAL.Models.Archive
 {
     [Table("ClientContracts", Schema = "WorkManager")]
-    public class ClientContract : WorkResultEntity
+    public sealed class ClientContract : WorkResultEntity
     {
-        
+
     }
 }

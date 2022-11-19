@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using WorkManager.Data.Models;
-using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Repositories.Interfaces;
 using WorkManager.Responses.Interfaces;
 using WorkManager.Tokens;
 

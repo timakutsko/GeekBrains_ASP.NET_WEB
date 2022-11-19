@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WorkManager.DAL.Repositories.Interfaces
+namespace WorkManager.Repositories.Interfaces
 {
     public interface IRepository<TIdentity, TEntity> where TEntity : class where TIdentity : struct
     {

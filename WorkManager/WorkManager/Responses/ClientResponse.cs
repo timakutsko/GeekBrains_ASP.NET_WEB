@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Repositories.Interfaces;
 using WorkManager.Data.Models;
 using WorkManager.Responses.Interfaces;
 

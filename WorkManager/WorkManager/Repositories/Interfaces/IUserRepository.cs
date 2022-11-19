@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using WorkManager.Data.Models;
 
-namespace WorkManager.DAL.Repositories.Interfaces
+namespace WorkManager.Repositories.Interfaces
 {
     internal interface IUserRepository
     {

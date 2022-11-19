@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Repositories.Interfaces;
 using WorkManager.Data.Contexts;
 using WorkManager.Data.Models;
 
-namespace WorkManager.DAL.Repositories
+namespace WorkManager.Repositories
 {
 	internal sealed class ClientContractsRepository : IRepository<int, ClientContract>
 	{

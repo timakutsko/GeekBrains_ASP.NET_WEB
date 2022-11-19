@@ -1,54 +1,54 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using WorkManager.DAL.Repositories.Interfaces;
+using WorkManager.Repositories.Interfaces;
 using WorkManager.Data.Contexts;
 using WorkManager.Data.Models;
 
-namespace WorkManager.DAL.Repositories
+namespace WorkManager.Repositories
 {
-    internal sealed class ClientsRepository : IRepository<int, Client>
+    internal sealed class InvoicesRepository : IRepository<int, Invoice>
     {
         /// <summary>
         /// Контекст БД
         /// </summary>
         private readonly WorkManagerDbContext _context;
 
-        public ClientsRepository(WorkManagerDbContext dbContext)
+        public InvoicesRepository(WorkManagerDbContext dbContext)
         {
             _context = dbContext;
         }
 
-        public bool Create(Client entity)
+        public bool Create(Invoice entity)
         {
-            _context.Clients.Add(entity);
+            _context.Invoices.Add(entity);
             _context.SaveChanges();
             return true;
         }
 
-        public IReadOnlyDictionary<int, Client> Get()
+        public IReadOnlyDictionary<int, Invoice> Get()
         {
             // Подгружаю элементы из БД
-            IEnumerable<Client> entityColl = _context
-                .Clients
+            IEnumerable<Invoice> entityColl = _context
+                .Invoices
                 .Where(c => c.IsDeleted == false)
                 .AsEnumerable();
 
-            Dictionary<int, Client> entitysIndex = entityColl
+            Dictionary<int, Invoice> entitysIndex = entityColl
                 .ToDictionary(c => c.Id, c => c);
 
-            IReadOnlyDictionary<int, Client> result = entitysIndex;
+            IReadOnlyDictionary<int, Invoice> result = entitysIndex;
             return result;
         }
 
-        public Client GetById(int id)
+        public Invoice GetById(int id)
         {
-            return _context.Clients.SingleOrDefault(c => c.Id == id);
+            return _context.Invoices.SingleOrDefault(c => c.Id == id);
         }
 
         public bool UpdateById(int id, string reqColumnName, string value)
         {
-            Client entity = GetById(id);
+            Invoice entity = GetById(id);
             if (entity != null)
             {
                 PropertyInfo prop = entity.GetType().GetProperty(reqColumnName, BindingFlags.Public | BindingFlags.Instance);
@@ -67,7 +67,7 @@ namespace WorkManager.DAL.Repositories
 
         public bool DeleteById(int id)
         {
-            Client entity = GetById(id);
+            Invoice entity = GetById(id);
             if (entity != null)
             {
                 entity.IsDeleted = true;

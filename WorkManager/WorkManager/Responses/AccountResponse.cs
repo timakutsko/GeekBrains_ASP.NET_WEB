@@ -11,6 +11,7 @@ using WorkManager.Data.Contexts;
 using WorkManager.Data.Models;
 using WorkManager.Models;
 using WorkManager.Repositories.Interfaces;
+using WorkManager.Requests;
 using WorkManager.Responses.Interfaces;
 using WorkManager.Tokens;
 
@@ -44,32 +45,38 @@ namespace WorkManager.Responses
             get { return _secretCode; }
         }
 
-        public void Registration(string login, string password)
+        public void Registration(AuthenticateRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(login) || !string.IsNullOrWhiteSpace(password))
+            string login = request.Login;
+            string password = request.Password;
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
             {
                 throw new Exception($"Registration is failed! Do not leave empty lines");
             }
 
-            using IServiceScope scope = _serviceScopeFactory.CreateScope();
-            WorkManagerDbContext context = scope.ServiceProvider.GetRequiredService<WorkManagerDbContext>();
-
-            Account account = FindAccByLogin(context, login);
-            if (account != null)
+            using (IServiceScope scope = _serviceScopeFactory.CreateScope())
             {
-                throw new ArgumentException($"This login is buzy! Input something else");
-            }
+                WorkManagerDbContext context = scope.ServiceProvider.GetRequiredService<WorkManagerDbContext>();
 
-            string passwordSalt = GeneratePassowrdSalt();
-            string passwrdHash = GetPasswordHash(password, passwordSalt);
-            if (!_repository.Create(new Account(login, passwordSalt, passwrdHash)))
-            {
-                throw new Exception("Can't create a user. Check out input data");
+                Account account = FindAccByLogin(context, login);
+                if (account != null)
+                {
+                    throw new ArgumentException($"This login is buzy! Input something else");
+                }
+
+                string passwordSalt = GeneratePassowrdSalt();
+                string passwrdHash = GetPasswordHash(password, passwordSalt);
+                if (!_repository.Create(new Account(login, passwordSalt, passwrdHash)))
+                {
+                    throw new Exception("Can't create a user. Check out input data");
+                }
             }
         }
 
-        public AuthenticateDto Authenticate(string login, string password)
+        public AuthenticateDto Authenticate(AuthenticateRequest request)
         {
+            string login = request.Login;
+            string password = request.Password;
             if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
             {
                 return new AuthenticateDto()
@@ -101,7 +108,7 @@ namespace WorkManager.Responses
             AccountSession session = new AccountSession()
             {
                 AccountId = account.Id,
-                SessionToken = GenerateJwtToken(account.Id, account.Login, 1),
+                SessionToken = GenerateJwtToken(account.Id, account.Login, 15),
                 TimeCreated = DateTime.Now,
                 IsClosed = false,
             };

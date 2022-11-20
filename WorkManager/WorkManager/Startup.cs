@@ -15,6 +15,9 @@ using WorkManager.Repositories.Interfaces;
 using WorkManager.Data.Contexts;
 using WorkManager.Data.Models;
 using WorkManager.Responses;
+using FluentValidation;
+using WorkManager.Requests;
+using WorkManager.Models.Validators;
 
 namespace WorkManager
 {
@@ -39,6 +42,11 @@ namespace WorkManager
             {
                 options.UseSqlServer(Configuration.GetConnectionString("WorkManagerDbContext"));
             });
+
+            // Настройка валидаторов
+            services.AddScoped<IValidator<AuthenticateRequest>, AuthenticationRequestValidator>();
+            services.AddScoped<IValidator<Client>, ClientValidator>();
+            services.AddScoped<IValidator<ClientContract>, ClientContractValidator>();
 
             // Добавление исходных клиентов
             services.AddScoped<CreateDefaultClients>();

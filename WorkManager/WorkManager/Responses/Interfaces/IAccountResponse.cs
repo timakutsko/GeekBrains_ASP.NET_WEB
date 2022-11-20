@@ -1,4 +1,5 @@
 ﻿using WorkManager.Models;
+using WorkManager.Requests;
 using WorkManager.Tokens;
 
 namespace WorkManager.Responses.Interfaces
@@ -8,16 +9,14 @@ namespace WorkManager.Responses.Interfaces
         /// <summary>
         /// Регистрация пользователя
         /// </summary>
-        /// <param name="login">Имя</param>
-        /// <param name="password">Пароль</param>
-        void Registration(string login, string password);
+        /// <param name="auth">Запрос</param>
+        void Registration(AuthenticateRequest auth);
 
         /// <summary>
         /// Аутентификация пользователя
         /// </summary>
-        /// <param name="login">Имя</param>
-        /// <param name="password">Пароль</param>
-        AuthenticateDto Authenticate(string login, string password);
+        /// <param name="auth">Запрос</param>
+        AuthenticateDto Authenticate(AuthenticateRequest auth);
 
         /// <summary>
         /// Текущая сессия

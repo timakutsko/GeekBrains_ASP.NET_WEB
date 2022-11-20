@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,17 +17,22 @@ namespace WorkManager.Controllers
     public class ClientContractController : Controller
     {
         private readonly ILogger<ClientContractController> _logger;
-        // Инжектируем DI провайдер
+        
         private readonly IServiceProvider _provider;
+        
         private ClientContractResponse _response;
 
-        public ClientContractController(ILogger<ClientContractController> logger, IServiceProvider provider)
+        private readonly IValidator<ClientContract> _clientContractValidator;
+
+        public ClientContractController(ILogger<ClientContractController> logger, IServiceProvider provider, IValidator<ClientContract> clientContractValidator)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientContractController).Name}");
 
             _provider = provider;
             _response = provider.GetService<ClientContractResponse>();
+
+            _clientContractValidator = clientContractValidator;
         }
 
         /// <summary>
@@ -40,6 +47,10 @@ namespace WorkManager.Controllers
                 $"\nTitle: {clientContract.Title}" +
                 $"\nFullTime: {clientContract.FullTime}");
 
+            ValidationResult validationResult = _clientContractValidator.Validate(clientContract);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.ToDictionary());
+
             try
             {
                 _response.Register(clientContract);
@@ -47,7 +58,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -67,7 +78,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -90,7 +101,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -113,7 +124,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -136,7 +147,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
     }

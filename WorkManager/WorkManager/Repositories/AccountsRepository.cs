@@ -21,8 +21,8 @@ namespace WorkManager.Repositories
         {
             _serviceScopeFactory = serviceScopeFactory;
 
-            using IServiceScope scope = _serviceScopeFactory.CreateScope();
-            WorkManagerDbContext _context = scope.ServiceProvider.GetRequiredService<WorkManagerDbContext>();
+            IServiceScope scope = _serviceScopeFactory.CreateScope();
+            _context = scope.ServiceProvider.GetRequiredService<WorkManagerDbContext>();
         }
 
         public IReadOnlyDictionary<int, Account> Get()

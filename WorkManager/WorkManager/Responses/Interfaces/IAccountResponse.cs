@@ -1,24 +1,29 @@
-﻿using WorkManager.Tokens;
+﻿using WorkManager.Models;
+using WorkManager.Tokens;
 
 namespace WorkManager.Responses.Interfaces
 {
-    internal interface IUserResponse
+    internal interface IAccountResponse
     {
-        //public ContainerTokens TokensPair { get; }
-
-        /// <summary>
-        /// Аутентификация пользователя
-        /// </summary>
-        /// <param name="login">Имя</param>
-        /// <param name="password">Пароль</param>
-        ContainerTokens Authenticate(string login, string password);
-
         /// <summary>
         /// Регистрация пользователя
         /// </summary>
         /// <param name="login">Имя</param>
         /// <param name="password">Пароль</param>
         void Registration(string login, string password);
+
+        /// <summary>
+        /// Аутентификация пользователя
+        /// </summary>
+        /// <param name="login">Имя</param>
+        /// <param name="password">Пароль</param>
+        AuthenticateDto Authenticate(string login, string password);
+
+        /// <summary>
+        /// Текущая сессия
+        /// </summary>
+        /// /// <param name="token">Токен обновления</param>
+        SessionDto GetSession(string token);
 
         /// <summary>
         /// Обновить токен по токену обновления

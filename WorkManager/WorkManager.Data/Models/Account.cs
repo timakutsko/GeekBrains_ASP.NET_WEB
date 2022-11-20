@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WorkManager.Data.Models
 {
-    [Table("Users")]
-    public sealed class User
+    [Table("Accounts")]
+    public class Account
     {
-        public User(string login, string passwordSalt, string passwordHash, bool isDeleted=false)
+        public Account(string login, string passwordSalt, string passwordHash, bool isDeleted=false)
         {
             Login = login;
             PasswordSalt = passwordSalt;
@@ -37,5 +37,8 @@ namespace WorkManager.Data.Models
         /// </summary>
         [Column(TypeName = "int")]
         public bool IsDeleted { get; set; }
+
+        [InverseProperty(nameof(AccountSession.Account))]
+        public virtual ICollection<AccountSession> Sessions { get; set; } = new HashSet<AccountSession>();
     }
 }

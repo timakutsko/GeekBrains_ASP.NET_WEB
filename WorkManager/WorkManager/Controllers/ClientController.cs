@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +10,7 @@ using WorkManager.Responses;
 namespace WorkManager.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("api/clients")]
     public class ClientController : Controller
     {
@@ -17,7 +18,6 @@ namespace WorkManager.Controllers
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
         private ClientResponse _clientResponse;
-        private UserResponse _userResponse;
 
         public ClientController(ILogger<ClientController> logger, IServiceProvider provider)
         {
@@ -26,7 +26,6 @@ namespace WorkManager.Controllers
 
             _provider = provider;
             _clientResponse = provider.GetService<ClientResponse>();
-            _userResponse = provider.GetService<UserResponse>();
         }
 
         /// <summary>

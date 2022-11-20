@@ -10,7 +10,7 @@ using WorkManager.Responses;
 namespace WorkManager.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("api/employees")]
     public class EmployeeController : Controller
     {

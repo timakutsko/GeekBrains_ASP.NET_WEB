@@ -9,13 +9,13 @@ namespace WorkManager.Repositories.Interfaces
         /// Записывает пользователя в БД
         /// </summary>
         /// <param name="entity">Элемент для записи</param>
-        bool Create(User entity);
+        bool Create(Account entity);
 
         /// <summary>
         /// Возвращает всех пользователей из БД
         /// </summary>
         /// <returns>Коллекция элементов</returns>
-        IReadOnlyDictionary<int, User> Get();
+        IReadOnlyDictionary<int, Account> Get();
 
         /// <summary>
 		/// Записывает токен обновления в БД

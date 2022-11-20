@@ -14,7 +14,6 @@ using WorkManager.Repositories;
 using WorkManager.Repositories.Interfaces;
 using WorkManager.Data.Contexts;
 using WorkManager.Data.Models;
-using WorkManager.MySQLsettings;
 using WorkManager.Responses;
 
 namespace WorkManager
@@ -34,6 +33,7 @@ namespace WorkManager
             services.AddCors();
 
             services.AddControllersWithViews();
+            
             // Настройка DB Context
             services.AddDbContext<WorkManagerDbContext>(options =>
             {
@@ -44,8 +44,8 @@ namespace WorkManager
             services.AddScoped<CreateDefaultClients>();
 
             // Работа с пользователями
-            services.AddScoped<UserResponse>();
-            services.AddScoped<IUserRepository, UsersRepository>();
+            services.AddSingleton<AccountResponse>();
+            services.AddSingleton<IUserRepository, AccountsRepository>();
 
             // Работа с клиентами
             services.AddScoped<ClientResponse>();
@@ -63,21 +63,10 @@ namespace WorkManager
             services.AddScoped<EmployeeResponse>();
             services.AddScoped<IRepository<int, Employee>, EmployeesRepository>();
 
-            // Настриваю миграцию БД - работа с отчетами
-            services.AddScoped<IMySqlSettings<MyTables, ClientsColumns>, SqlClientsTable>();
-            services.AddScoped<IMySqlSettings<MyTables, ClientContractsColumns>, SqlClientContractsTable>();
-            services.AddScoped<IMySqlSettings<MyTables, InvoicesColumns>, SqlInvoicesTable>();
-            services.AddScoped<IMySqlSettings<MyTables, EmployeesColumns>, SqlEmployeesTable>();
-
             // Настриваю миграцию БД - работа с пользователями сервиса
-            services.AddScoped<IMySqlSettings<MyTables, UsersColumns>, SqlUsersTable>();
-
             services.AddFluentMigratorCore()
-                .ConfigureRunner(rb => rb.AddSQLite() // Добавляем поддержку SQLite
-                    .WithGlobalConnectionString(SqlTables.ConnectionString) // Устанавливаем строку подключения
-                    .ScanIn(typeof(Startup).Assembly).For.Migrations()) // Подсказываем, где искать класс с миграциями
+                .ConfigureRunner(rb => rb.AddSQLite()) // Добавляем поддержку SQLite
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
-
 
             // Настройка аутентификации
             services.AddAuthentication(x =>
@@ -92,13 +81,12 @@ namespace WorkManager
                     x.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UserResponse.SecretCode)),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AccountResponse.SecretCode)),
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ClockSkew = TimeSpan.Zero
                     };
                 });
-
 
             //Настройка swagger
             services.AddSwaggerGen(c =>
@@ -130,11 +118,17 @@ namespace WorkManager
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMigrationRunner migrationRunner)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASD v1");
+                    c.RoutePrefix = string.Empty;
+                });
             }
             else
             {
@@ -142,13 +136,6 @@ namespace WorkManager
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASD v1");
-                c.RoutePrefix = string.Empty;
-            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

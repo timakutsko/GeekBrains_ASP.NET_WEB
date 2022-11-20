@@ -6,10 +6,16 @@ namespace WorkManager.Data.Contexts
     public sealed class WorkManagerDbContext : DbContext
     {
         public DbSet<Client>? Clients { get; set; }
+        
         public DbSet<Employee>? Employees { get; set; }
+        
         public DbSet<ClientContract>? ClientContracts { get; set; }
+        
         public DbSet<Invoice>? Invoices { get; set; }
-        public DbSet<User>? Users { get; set; }
+        
+        public DbSet<Account>? Accounts { get; set; }
+        
+        public DbSet<AccountSession>? AccountSessions { get; set; }
         
         public WorkManagerDbContext(DbContextOptions<WorkManagerDbContext> options) : base(options)
         {

@@ -18,6 +18,7 @@ using WorkManager.Responses;
 using FluentValidation;
 using WorkManager.Requests;
 using WorkManager.Models.Validators;
+using WorkManager.Services;
 
 namespace WorkManager
 {
@@ -33,10 +34,13 @@ namespace WorkManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            services.AddGrpc();
+            services.AddScoped<DictionariesClientService>();
 
             services.AddControllersWithViews();
             
+            services.AddCors();
+
             // Настройка DB Context
             services.AddDbContext<WorkManagerDbContext>(options =>
             {
@@ -161,6 +165,7 @@ namespace WorkManager
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<DictionariesClientService>();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");

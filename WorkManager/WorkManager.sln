@@ -5,22 +5,35 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkManager", "WorkManager\WorkManager.csproj", "{7C42D185-272D-4446-849E-B02FB1946BD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkManager.Data", "WorkManager.Data\WorkManager.Data.csproj", "{3E951206-7845-4513-BC0F-99084E7E3F2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkManager.Data", "WorkManager.Data\WorkManager.Data.csproj", "{3E951206-7845-4513-BC0F-99084E7E3F2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyClientForGRPC", "MyClientForGRPC\MyClientForGRPC.csproj", "{CC71FD11-CDB9-48BB-830D-00A14F74D918}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_grpc|Any CPU = Debug_grpc|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C42D185-272D-4446-849E-B02FB1946BD4}.Debug_grpc|Any CPU.ActiveCfg = Debug_grpc|Any CPU
+		{7C42D185-272D-4446-849E-B02FB1946BD4}.Debug_grpc|Any CPU.Build.0 = Debug_grpc|Any CPU
 		{7C42D185-272D-4446-849E-B02FB1946BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C42D185-272D-4446-849E-B02FB1946BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C42D185-272D-4446-849E-B02FB1946BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C42D185-272D-4446-849E-B02FB1946BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Debug_grpc|Any CPU.ActiveCfg = Debug_grpc|Any CPU
+		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Debug_grpc|Any CPU.Build.0 = Debug_grpc|Any CPU
 		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E951206-7845-4513-BC0F-99084E7E3F2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Debug_grpc|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Debug_grpc|Any CPU.Build.0 = Debug|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC71FD11-CDB9-48BB-830D-00A14F74D918}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,17 @@ namespace WorkManager
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                    .ConfigureKestrel(options =>
+                    {
+                        options.Listen(System.Net.IPAddress.Any, 5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+                            listenOptions.UseHttps(@"D:\MyStudy\GeekBrains_ASP.NET_WEB\cert.pfx", "12345");
+                        });
+                    })
+                    .UseKestrel()
+                    .UseStartup<Startup>();
                 })
                 .ConfigureLogging(logging =>
                 {

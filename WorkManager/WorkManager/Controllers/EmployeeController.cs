@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/employees")]
     public class EmployeeController : Controller
     {
         private readonly ILogger<EmployeeController> _logger;
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
-        private EmployeeResponse _employeeResponse;
+        private EmployeeResponse _response;
 
         public EmployeeController(ILogger<EmployeeController> logger, IServiceProvider provider)
         {
@@ -24,7 +25,7 @@ namespace WorkManager.Controllers
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(EmployeeController).Name}");
 
             _provider = provider;
-            _employeeResponse = provider.GetService<EmployeeResponse>();
+            _response = provider.GetService<EmployeeResponse>();
         }
 
         /// <summary>
@@ -45,12 +46,12 @@ namespace WorkManager.Controllers
 
             try
             {
-                _employeeResponse.Register(employee);
+                _response.Register(employee);
                 return Ok($"Сотрудник {employee.FirstName} {employee.LastName} был создан!");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -58,19 +59,19 @@ namespace WorkManager.Controllers
 		/// Запрос списка сотрудников
 		/// </summary>
 		/// <returns>Список клиентов</returns>
-		[HttpGet("get")]
+        [HttpGet("get")]
         public IActionResult GetElements()
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов.");
 
             try
             {
-                IReadOnlyDictionary<int, Employee> resp = _employeeResponse.GetAllData();
+                IReadOnlyDictionary<int, Employee> resp = _response.GetAllData();
                 return Ok(resp);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -87,12 +88,12 @@ namespace WorkManager.Controllers
 
             try
             {
-                Employee currentElement = _employeeResponse.GetById(id);
+                Employee currentElement = _response.GetById(id);
                 return Ok(currentElement);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -110,12 +111,12 @@ namespace WorkManager.Controllers
 
             try
             {
-                _employeeResponse.UpdateById(id, reqColumnName, value);
+                _response.UpdateById(id, reqColumnName, value);
                 return Ok($"Клиенту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -132,12 +133,12 @@ namespace WorkManager.Controllers
 
             try
             {
-                _employeeResponse.DeleteById(id);
+                _response.DeleteById(id);
                 return Ok($"Сотрудник с id {id} был успешно удален!");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
     }

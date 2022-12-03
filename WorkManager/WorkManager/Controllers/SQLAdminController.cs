@@ -2,10 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using WorkManager.DAL.Models;
-using WorkManager.DAL.Repositories;
-using WorkManager.MySQLsettings;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
@@ -40,7 +36,7 @@ namespace WorkManager.Controllers
 
             _createDefaultClients.Create();
 
-            return Ok();
+            return Ok("База данных клиентов по умолчанию - наполнена успешно!");
         }
     }
 }

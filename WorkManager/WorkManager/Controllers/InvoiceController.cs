@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/invoices")]
     public class InvoiceController : Controller
     {
         private readonly ILogger<InvoiceController> _logger;
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
-        private InvoiceResponse _invoiceResponse;
+        private InvoiceResponse _response;
 
         public InvoiceController(ILogger<InvoiceController> logger, IServiceProvider provider)
         {
@@ -24,26 +25,26 @@ namespace WorkManager.Controllers
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(InvoiceController).Name}");
 
             _provider = provider;
-            _invoiceResponse = provider.GetService<InvoiceResponse>();
+            _response = provider.GetService<InvoiceResponse>();
         }
 
         /// <summary>
 		/// Запрос списка счетов
 		/// </summary>
 		/// <returns>Список сотрудников</returns>
-		[HttpGet("get")]
+        [HttpGet("get")]
         public IActionResult GetElements()
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех счетов. Параметры:...");
 
             try
             {
-                IReadOnlyDictionary<int, Invoice> resp = _invoiceResponse.GetAllData();
+                IReadOnlyDictionary<int, Invoice> resp = _response.GetAllData();
                 return Ok(resp);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
@@ -51,7 +52,6 @@ namespace WorkManager.Controllers
         /// Обновление всех счетов
         /// </summary>
         /// <returns>Обновленный сотрудник</returns>
-        [HttpPut("update")]
         [HttpPut("update/{id}/{reqColumnName}/{value}")]
         public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
@@ -62,12 +62,12 @@ namespace WorkManager.Controllers
 
             try
             {
-                _invoiceResponse.UpdateById(id, reqColumnName, value);
+                _response.UpdateById(id, reqColumnName, value);
                 return Ok($"Счет с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
     }

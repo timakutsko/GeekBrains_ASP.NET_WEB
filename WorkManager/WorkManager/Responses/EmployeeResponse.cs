@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Repositories.Interfaces;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Responses
 {
-    public class EmployeeResponse
+    internal sealed class EmployeeResponse : ICrudById<Employee>, ICrudAllData<Employee>
     {
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
@@ -16,12 +16,9 @@ namespace WorkManager.Responses
         public EmployeeResponse(IServiceProvider provider)
         {
             _provider = provider;
-            _repository = _provider.GetService<IRepository<int, Employee>>();
+            _repository = provider.GetService<IRepository<int, Employee>>();
         }
 
-        /// <summary>
-            /// Создание сотрудника в ответ серверу
-            /// </summary>
         public void Register(Employee entity)
         {
             if (!_repository.Create(entity))
@@ -30,9 +27,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Создание списка всех сотрудников в ответ серверу
-        /// </summary>
         public IReadOnlyDictionary<int, Employee> GetAllData()
         {
             IReadOnlyDictionary<int, Employee> allElems = _repository.Get();
@@ -46,9 +40,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Передача сотрудника в ответ серверу
-        /// </summary>
         public Employee GetById(int id)
         {
             Employee entity = _repository.GetById(id);
@@ -62,9 +53,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Обновление сотрудника в ответ серверу
-        /// </summary>
         public void UpdateById(int id, string reqColumnName, string value)
         {
             if (!_repository.UpdateById(id, reqColumnName, value))
@@ -73,9 +61,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Удаление сотрудника в ответ серверу
-        /// </summary>
         public void DeleteById(int id)
         {
             if (!_repository.DeleteById(id))

@@ -1,47 +1,60 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Responses;
 
 namespace WorkManager.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/clients")]
     public class ClientController : Controller
     {
         private readonly ILogger<ClientController> _logger;
-        // Инжектируем DI провайдер
+        
         private readonly IServiceProvider _provider;
+        
         private ClientResponse _clientResponse;
+        
+        private readonly IValidator<Client> _clientValidator;
 
-        public ClientController(ILogger<ClientController> logger, IServiceProvider provider)
+        public ClientController(ILogger<ClientController> logger, IServiceProvider provider, IValidator<Client> clientValidator)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientController).Name}");
-            
+
             _provider = provider;
             _clientResponse = provider.GetService<ClientResponse>();
+
+            _clientValidator = clientValidator;
         }
 
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(IDictionary<string, string[]>), StatusCodes.Status400BadRequest)]
         /// <summary>
         /// Создание нового килента
         /// </summary>
         /// <returns>Созданный клиент</returns>
-        [HttpPost("register")]
         public IActionResult RegisterElement([FromBody] Client client)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового клиента. Параметры:" +
-                $"\nId: {client.Id}" +
                 $"\nFirst name: {client.FirstName}" +
                 $"\nLast name: {client.LastName}" +
                 $"\nEmail: {client.Email}" +
                 $"\nAge: {client.Age}" +
                 $"\nCompany: {client.Company}");
-            
+
+            ValidationResult validationResult = _clientValidator.Validate(client);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.ToDictionary());
+
             try
             {
                 _clientResponse.Register(client);
@@ -49,35 +62,35 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
+        [HttpGet("get")]
         /// <summary>
 		/// Запрос списка клиентов
 		/// </summary>
 		/// <returns>Список клиентов</returns>
-		[HttpGet("get")]
         public IActionResult GetElements()
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов.");
-            
-            try 
+
+            try
             {
                 IReadOnlyDictionary<int, Client> resp = _clientResponse.GetAllData();
                 return Ok(resp);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
+        [HttpGet("get/{id}")]
         /// <summary>
         /// Запрос клиента по id
         /// </summary>
         /// <returns>Необходимый клиент</returns>
-        [HttpGet("get/{id}")]
         public IActionResult GetById([FromRoute] int id)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения клиента по id. Параметры:" +
@@ -91,15 +104,15 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
+        [HttpPut("update/{id}/{reqColumnName}/{value}")]
         /// <summary>
         /// Обновление клиента по id
         /// </summary>
         /// <returns>Обновленный клиент</returns>
-        [HttpPut("update/{id}/{reqColumnName}/{value}")]
         public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода обновления клиента по id. Параметры:" +
@@ -114,15 +127,15 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
 
+        [HttpDelete("delete/{id}")]
         /// <summary>
         /// Удаление клиента по id
         /// </summary>
         /// <returns>Сообщение об удалении</returns>
-        [HttpDelete("delete/{id}")]
         public IActionResult DeleteById([FromRoute] int id)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода удаления клиента по id. Параметры:" +
@@ -136,7 +149,7 @@ namespace WorkManager.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
             }
         }
     }

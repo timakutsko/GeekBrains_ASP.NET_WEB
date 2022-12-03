@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using WorkManager.DAL.Interfaces;
-using WorkManager.DAL.Models;
+using WorkManager.Data.Models;
 using WorkManager.Repositories.Interfaces;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Responses
 {
-    public class ClientContractResponse
+    internal sealed class ClientContractResponse : ICrudById<ClientContract>, ICrudAllData<ClientContract>
     {
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
@@ -16,12 +16,9 @@ namespace WorkManager.Responses
         public ClientContractResponse(IServiceProvider provider)
         {
             _provider = provider;
-            _repository = _provider.GetService<IRepository<int, ClientContract>>();
+            _repository = provider.GetService<IRepository<int, ClientContract>>();
         }
 
-        /// <summary>
-        /// Создание контракта в ответ серверу
-        /// </summary>
         public void Register(ClientContract entity)
         {
             if (!_repository.Create(entity))
@@ -30,9 +27,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Создание списка всех контрактов в ответ серверу
-        /// </summary>
         public IReadOnlyDictionary<int, ClientContract> GetAllData()
         {
             IReadOnlyDictionary<int, ClientContract> allElems = _repository.Get();
@@ -46,9 +40,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Передача контракта в ответ серверу
-        /// </summary>
         public ClientContract GetById(int id)
         {
             ClientContract entity = _repository.GetById(id);
@@ -62,9 +53,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Обновление контракта в ответ серверу
-        /// </summary>
         public void UpdateById(int id, string reqColumnName, string value)
         {
             if (!_repository.UpdateById(id, reqColumnName, value))
@@ -73,9 +61,6 @@ namespace WorkManager.Responses
             }
         }
 
-        /// <summary>
-        /// Удаление контракта в ответ серверу
-        /// </summary>
         public void DeleteById(int id)
         {
             if (!_repository.DeleteById(id))

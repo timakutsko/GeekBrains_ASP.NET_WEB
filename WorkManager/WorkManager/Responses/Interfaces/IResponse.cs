@@ -1,6 +1,8 @@
-﻿namespace WorkManager.Responses.Interfaces
+﻿using System.Collections.Generic;
+
+namespace WorkManager.Responses.Interfaces
 {
-    public interface ICrudById<TEntity> where TEntity : class
+    public interface IResponse<TEntity> where TEntity : class
     {
         /// <summary>
         /// Создание сущности в ответ серверу
@@ -21,5 +23,10 @@
         /// Удаление сущности в ответ серверу (по id)
         /// </summary>
         void DeleteById(int id);
+
+        /// <summary>
+        /// Создание сущности в ответ серверу
+        /// </summary>
+        IReadOnlyDictionary<int, TEntity> GetAllData();
     }
 }

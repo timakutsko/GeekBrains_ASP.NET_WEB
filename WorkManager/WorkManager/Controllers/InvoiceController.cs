@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using WorkManager.Data.Models;
 using WorkManager.Responses;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Controllers
 {
@@ -15,17 +16,15 @@ namespace WorkManager.Controllers
     public class InvoiceController : Controller
     {
         private readonly ILogger<InvoiceController> _logger;
-        // Инжектируем DI провайдер
-        private readonly IServiceProvider _provider;
-        private InvoiceResponse _response;
 
-        public InvoiceController(ILogger<InvoiceController> logger, IServiceProvider provider)
+        private readonly IResponse<Invoice> _response;
+
+        public InvoiceController(ILogger<InvoiceController> logger, IResponse<Invoice> response)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(InvoiceController).Name}");
 
-            _provider = provider;
-            _response = provider.GetService<InvoiceResponse>();
+            _response = response;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using WorkManager.Data.Models;
 using WorkManager.Responses;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Controllers
 {
@@ -17,20 +18,17 @@ namespace WorkManager.Controllers
     public class ClientContractController : Controller
     {
         private readonly ILogger<ClientContractController> _logger;
-        
-        private readonly IServiceProvider _provider;
-        
-        private ClientContractResponse _response;
+
+        private readonly IResponse<ClientContract> _response;
 
         private readonly IValidator<ClientContract> _clientContractValidator;
 
-        public ClientContractController(ILogger<ClientContractController> logger, IServiceProvider provider, IValidator<ClientContract> clientContractValidator)
+        public ClientContractController(ILogger<ClientContractController> logger, IResponse<ClientContract> response, IValidator<ClientContract> clientContractValidator)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientContractController).Name}");
 
-            _provider = provider;
-            _response = provider.GetService<ClientContractResponse>();
+            _response = response;
 
             _clientContractValidator = clientContractValidator;
         }

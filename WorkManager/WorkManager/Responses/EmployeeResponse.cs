@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using WorkManager.Data.Models;
+using WorkManager.Repositories;
 using WorkManager.Repositories.Interfaces;
 using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Responses
 {
-    internal sealed class EmployeeResponse : ICrudById<Employee>, ICrudAllData<Employee>
+    public class EmployeeResponse : IResponse<Employee>
     {
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;
@@ -16,7 +17,7 @@ namespace WorkManager.Responses
         public EmployeeResponse(IServiceProvider provider)
         {
             _provider = provider;
-            _repository = provider.GetService<IRepository<int, Employee>>();
+            _repository = provider.GetService<EmployeesRepository>();
         }
 
         public void Register(Employee entity)

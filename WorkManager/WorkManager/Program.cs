@@ -37,6 +37,7 @@ namespace WorkManager
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
+#if DEBUG_GRPC
                     .ConfigureKestrel(options =>
                     {
                         options.Listen(System.Net.IPAddress.Any, 5001, listenOptions =>
@@ -46,6 +47,7 @@ namespace WorkManager
                         });
                     })
                     .UseKestrel()
+#endif
                     .UseStartup<Startup>();
                 })
                 .ConfigureLogging(logging =>

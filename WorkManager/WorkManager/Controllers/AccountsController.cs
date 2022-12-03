@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using WorkManager.Models;
 using WorkManager.Requests;
 using WorkManager.Responses;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Controllers
 {
@@ -22,19 +23,16 @@ namespace WorkManager.Controllers
     {
         private readonly ILogger<AccountsController> _logger;
 
-        private readonly IServiceProvider _provider;
-
-        private AccountResponse _accountResponse;
+        private readonly IAccountResponse _accountResponse;
 
         private readonly IValidator<AuthenticateRequest> _authValidator;
 
-        public AccountsController(ILogger<AccountsController> logger, IServiceProvider provider, IValidator<AuthenticateRequest> authValidator)
+        public AccountsController(ILogger<AccountsController> logger, IAccountResponse accountResponse, IValidator<AuthenticateRequest> authValidator)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(AccountsController).Name}");
 
-            _provider = provider;
-            _accountResponse = provider.GetService<AccountResponse>();
+            _accountResponse = accountResponse;
 
             _authValidator = authValidator;
         }

@@ -17,7 +17,7 @@ using WorkManager.Tokens;
 
 namespace WorkManager.Responses
 {
-    internal sealed class AccountResponse : IAccountResponse
+    public class AccountResponse : IAccountResponse
     {
         /// <summary>
         /// Секртеное слово для токена

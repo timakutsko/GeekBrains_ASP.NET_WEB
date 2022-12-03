@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using WorkManager.Data.Models;
 using WorkManager.Responses;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Controllers
 {
@@ -19,19 +20,16 @@ namespace WorkManager.Controllers
     {
         private readonly ILogger<ClientController> _logger;
         
-        private readonly IServiceProvider _provider;
-        
-        private ClientResponse _clientResponse;
+        private readonly IResponse<Client> _response;
         
         private readonly IValidator<Client> _clientValidator;
 
-        public ClientController(ILogger<ClientController> logger, IServiceProvider provider, IValidator<Client> clientValidator)
+        public ClientController(ILogger<ClientController> logger, IResponse<Client> response, IValidator<Client> clientValidator)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientController).Name}");
 
-            _provider = provider;
-            _clientResponse = provider.GetService<ClientResponse>();
+            _response = response;
 
             _clientValidator = clientValidator;
         }
@@ -57,7 +55,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientResponse.Register(client);
+                _response.Register(client);
                 return Ok($"Клиент {client.FirstName} {client.LastName} был создан!");
             }
             catch (Exception ex)
@@ -77,7 +75,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                IReadOnlyDictionary<int, Client> resp = _clientResponse.GetAllData();
+                IReadOnlyDictionary<int, Client> resp = _response.GetAllData();
                 return Ok(resp);
             }
             catch (Exception ex)
@@ -99,7 +97,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                Client currentElement = _clientResponse.GetById(id);
+                Client currentElement = _response.GetById(id);
                 return Ok(currentElement);
             }
             catch (Exception ex)
@@ -122,7 +120,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientResponse.UpdateById(id, reqColumnName, value);
+                _response.UpdateById(id, reqColumnName, value);
                 return Ok($"Клиенту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
@@ -144,7 +142,7 @@ namespace WorkManager.Controllers
 
             try
             {
-                _clientResponse.DeleteById(id);
+                _response.DeleteById(id);
                 return Ok($"Клиент с id {id} был успешно удален!");
             }
             catch (Exception ex)

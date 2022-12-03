@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,17 @@ namespace WorkManager.Controllers
     public class InvoiceController : Controller
     {
         private readonly ILogger<InvoiceController> _logger;
-        private InvoiceResponse _invoiceResponse = new InvoiceResponse();
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private InvoiceResponse _invoiceResponse;
 
-        public InvoiceController(ILogger<InvoiceController> logger)
+        public InvoiceController(ILogger<InvoiceController> logger, IServiceProvider provider)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(InvoiceController).Name}");
+
+            _provider = provider;
+            _invoiceResponse = provider.GetService<InvoiceResponse>();
         }
 
         /// <summary>
@@ -30,9 +36,15 @@ namespace WorkManager.Controllers
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех счетов. Параметры:...");
 
-            IList<Invoice> allElements = _invoiceResponse.GetAllData();
-
-            return Ok();
+            try
+            {
+                IReadOnlyDictionary<int, Invoice> resp = _invoiceResponse.GetAllData();
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -40,15 +52,18 @@ namespace WorkManager.Controllers
         /// </summary>
         /// <returns>Обновленный сотрудник</returns>
         [HttpPut("update")]
-        public IActionResult UpdateElements()
+        [HttpPut("update/{id}/{reqColumnName}/{value}")]
+        public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода обновления всех счетов. Параметры:...");
+            _logger.LogInformation("\n[MyInfo]: Вызов метода обновления клиента по id. Параметры:" +
+                $"\nId для обновления: {id}" +
+                $"\nИмя парамтера для обновления: {reqColumnName}" +
+                $"\nЗначение для обновления: {value}");
 
             try
             {
-                _invoiceResponse.UpdateAllData();
-
-                return Ok();
+                _invoiceResponse.UpdateById(id, reqColumnName, value);
+                return Ok($"Счет с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {

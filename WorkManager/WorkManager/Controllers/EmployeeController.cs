@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,30 +14,68 @@ namespace WorkManager.Controllers
     public class EmployeeController : Controller
     {
         private readonly ILogger<EmployeeController> _logger;
-        private EmployeeResponse _employeeResponse = new EmployeeResponse();
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private EmployeeResponse _employeeResponse;
 
-        public EmployeeController(ILogger<EmployeeController> logger)
+        public EmployeeController(ILogger<EmployeeController> logger, IServiceProvider provider)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(EmployeeController).Name}");
+
+            _provider = provider;
+            _employeeResponse = provider.GetService<EmployeeResponse>();
+        }
+
+        /// <summary>
+        /// Создание нового сотрудника
+        /// </summary>
+        /// <returns>Созданный клиент</returns>
+        [HttpPost("register")]
+        public IActionResult RegisterElement([FromBody] Employee employee)
+        {
+            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового клиента. Параметры:" +
+                $"\nId: {employee.Id}" +
+                $"\nFirst name: {employee.FirstName}" +
+                $"\nLast name: {employee.LastName}" +
+                $"\nEmail: {employee.Email}" +
+                $"\nAge: {employee.Age}" +
+                $"\nHourSalary: {employee.HourSalary}" +
+                $"\nSpendingTime: {employee.SpendingTime}");
+
+            try
+            {
+                _employeeResponse.Register(employee);
+                return Ok($"Сотрудник {employee.FirstName} {employee.LastName} был создан!");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
 		/// Запрос списка сотрудников
 		/// </summary>
-		/// <returns>Список сотрудников</returns>
+		/// <returns>Список клиентов</returns>
 		[HttpGet("get")]
         public IActionResult GetElements()
         {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех сотрудников. Параметры:...");
+            _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех клиентов.");
 
-            IList<Employee> allElements = _employeeResponse.GetAllData();
-
-            return Ok();
+            try
+            {
+                IReadOnlyDictionary<int, Employee> resp = _employeeResponse.GetAllData();
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
-        /// Запрос сотрудника по id
+        /// Запрос клиента по id
         /// </summary>
         /// <returns>Необходимый сотрудник</returns>
         [HttpGet("get/{id}")]
@@ -49,7 +88,6 @@ namespace WorkManager.Controllers
             try
             {
                 Employee currentElement = _employeeResponse.GetById(id);
-                
                 return Ok(currentElement);
             }
             catch (Exception ex)
@@ -59,35 +97,21 @@ namespace WorkManager.Controllers
         }
 
         /// <summary>
-        /// Создание нового сотрудника
-        /// </summary>
-        /// <returns>Созданный сотрудник</returns>
-        [HttpPost("register")]
-        public IActionResult RegisterElement()
-        {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового сотрудника. Параметры:...");
-
-            Employee newElement = _employeeResponse.Register();
-
-            return Ok(newElement);
-        }
-
-        /// <summary>
         /// Обновление сотрудника по id
         /// </summary>
         /// <returns>Обновленный сотрудник</returns>
-        [HttpPut("update/{id}")]
-        public IActionResult UpdateById([FromRoute] int id)
+        [HttpPut("update/{id}/{reqColumnName}/{value}")]
+        public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода обновления сотрудника по id. Параметры:" +
-                $"id = {id}"
-                );
+                $"\nId для обновления: {id}" +
+                $"\nИмя парамтера для обновления: {reqColumnName}" +
+                $"\nЗначение для обновления: {value}");
 
             try
             {
-                Employee updateElementt = _employeeResponse.UpdateById(id);
-
-                return Ok(updateElementt);
+                _employeeResponse.UpdateById(id, reqColumnName, value);
+                return Ok($"Клиенту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {
@@ -99,7 +123,7 @@ namespace WorkManager.Controllers
         /// Удаление сотрудника по id
         /// </summary>
         /// <returns>Сообщение об удалении</returns>
-        [HttpPut("delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteById([FromRoute] int id)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода удаления сотрудника по id. Параметры:" +
@@ -109,8 +133,7 @@ namespace WorkManager.Controllers
             try
             {
                 _employeeResponse.DeleteById(id);
-                
-                return Ok("Employee have been deleted!");
+                return Ok($"Сотрудник с id {id} был успешно удален!");
             }
             catch (Exception ex)
             {

@@ -9,20 +9,20 @@ using WorkManager.Repositories.Interfaces;
 
 namespace WorkManager.DAL.Repositories
 {
-    public class ClientsRepository : IRepository<int, Client>
+    public class EmployeesRepository : IRepository<int, Employee>
     {
         /// <summary>
         /// Контекст БД
         /// </summary>
-        private readonly ClientDbContext _context;
+        private readonly EmployeeDbContext _context;
 
 
-        public ClientsRepository(ClientDbContext dbContext)
+        public EmployeesRepository(EmployeeDbContext dbContext)
         {
             _context = dbContext;
         }
 
-        public bool Create(Client entity)
+        public bool Create(Employee entity)
         {
             try
             {
@@ -36,20 +36,20 @@ namespace WorkManager.DAL.Repositories
             }
         }
 
-        public IReadOnlyDictionary<int, Client> Get()
+        public IReadOnlyDictionary<int, Employee> Get()
         {
             try
             {
                 // Подгружаю элементы из БД
-                IEnumerable<Client> entityColl = _context
-                    .Clients
+                IEnumerable<Employee> entityColl = _context
+                    .Employees
                     .Where(c => c.IsDeleted == false)
                     .AsEnumerable();
 
-                Dictionary<int, Client> entitysIndex = entityColl
+                Dictionary<int, Employee> entitysIndex = entityColl
                     .ToDictionary(c => c.Id, c => c);
 
-                IReadOnlyDictionary<int, Client> result = entitysIndex;
+                IReadOnlyDictionary<int, Employee> result = entitysIndex;
                 return result;
             }
             catch
@@ -58,11 +58,11 @@ namespace WorkManager.DAL.Repositories
             }
         }
 
-        public Client GetById(int id)
+        public Employee GetById(int id)
         {
             try
             {
-                return _context.Clients.SingleOrDefault(c => c.Id == id);
+                return _context.Employees.SingleOrDefault(c => c.Id == id);
             }
             catch
             {
@@ -74,8 +74,8 @@ namespace WorkManager.DAL.Repositories
         {
             try
             {
-                Client entity = _context.Clients.SingleOrDefault(c => c.Id == id);
-                foreach (ClientsColumns column in Enum.GetValues(typeof(ClientsColumns)))
+                Employee entity = _context.Employees.SingleOrDefault(c => c.Id == id);
+                foreach (EmployeesColumns column in Enum.GetValues(typeof(EmployeesColumns)))
                 {
                     string dbColumnName = _context.MySqlSettings[column];
                     if (dbColumnName == reqColumnName)
@@ -102,7 +102,7 @@ namespace WorkManager.DAL.Repositories
         {
             try
             {
-                Client entity = _context.Clients.SingleOrDefault(c => c.Id == id);
+                Employee entity = _context.Employees.SingleOrDefault(c => c.Id == id);
                 _context.Remove(entity);
                 _context.SaveChanges();
                 return true;

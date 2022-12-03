@@ -1,20 +1,49 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using WorkManager.DAL.Interfaces;
 using WorkManager.DAL.Models;
-using WorkManager.WorkManagerExceptions;
+using WorkManager.Repositories.Interfaces;
 
 namespace WorkManager.Responses
 {
     public class ClientContractResponse
     {
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private readonly IRepository<int, ClientContract> _repository;
+
+        public ClientContractResponse(IServiceProvider provider)
+        {
+            _provider = provider;
+            _repository = _provider.GetService<IRepository<int, ClientContract>>();
+        }
+
+        /// <summary>
+        /// Создание контракта в ответ серверу
+        /// </summary>
+        public void Register(ClientContract entity)
+        {
+            if (!_repository.Create(entity))
+            {
+                throw new Exception("Can't create a contract. Check out input data");
+            }
+        }
+
         /// <summary>
         /// Создание списка всех контрактов в ответ серверу
         /// </summary>
-        public IList<ClientContract> GetAllData()
+        public IReadOnlyDictionary<int, ClientContract> GetAllData()
         {
-            IList<ClientContract> allElems = new List<ClientContract>();
-            return allElems;
+            IReadOnlyDictionary<int, ClientContract> allElems = _repository.Get();
+            if (allElems != null)
+            {
+                return allElems;
+            }
+            else
+            {
+                throw new Exception("Bad request to repo.");
+            }
         }
 
         /// <summary>
@@ -22,32 +51,25 @@ namespace WorkManager.Responses
         /// </summary>
         public ClientContract GetById(int id)
         {
-            //stub without logic
-            ClientContract clientContract = SearchClientContractById(id);
-            if (clientContract != null)
+            ClientContract entity = _repository.GetById(id);
+            if (entity != null)
             {
-                return clientContract;
+                return entity;
             }
             else
             {
-                throw new ClientContractNotFoundException(id.ToString());
+                throw new Exception($"Contract with id: {id} not found. Maybe it's dosen't exsist?");
             }
         }
 
         /// <summary>
         /// Обновление контракта в ответ серверу
         /// </summary>
-        public ClientContract UpdateById(int id)
+        public void UpdateById(int id, string reqColumnName, string value)
         {
-            //stub without logic
-            ClientContract clientContract = SearchClientContractById(id);
-            if (clientContract != null)
+            if (!_repository.UpdateById(id, reqColumnName, value))
             {
-                return clientContract;
-            }
-            else
-            {
-                throw new ClientContractNotFoundException(id.ToString());
+                throw new Exception($"Client with id: {id} can not update! Maybe it's dosen't exsist or input params are faild?");
             }
         }
 
@@ -56,28 +78,9 @@ namespace WorkManager.Responses
         /// </summary>
         public void DeleteById(int id)
         {
-            //stub without logic
-        }
-
-        /// <summary>
-        /// Создание контракта в ответ серверу
-        /// </summary>
-        public ClientContract Register()
-        {
-            ClientContract registerElement = new ClientContract();
-            return registerElement;
-        }
-
-        private ClientContract SearchClientContractById(int id)
-        {
-            //stub without logic
-            if (id != 1)
+            if (!_repository.DeleteById(id))
             {
-                return new ClientContract();
-            }
-            else
-            {
-                return null;
+                throw new Exception($"Contract with id: {id} can not delete! Maybe it's dosen't exsist?");
             }
         }
     }

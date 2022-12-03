@@ -9,8 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkManager.DAL.Models;
 using WorkManager.DAL.Repositories;
+using WorkManager.DAL.Repositories.Contexts;
 using WorkManager.MySQLsettings;
+using WorkManager.Repositories.Interfaces;
+using WorkManager.Responses;
 
 namespace WorkManager
 {
@@ -28,14 +32,37 @@ namespace WorkManager
         {
             services.AddControllersWithViews();
 
-            services.AddSingleton<ClientsRepository>();
+            // Добавление исходных клиентов
+            services.AddSingleton<CreateDefaultClients>();
+            
+            // Работа с клиентами
+            services.AddSingleton<ClientResponse>();
+            services.AddSingleton<ClientDbContext>();
+            services.AddSingleton<IRepository<int, Client>, ClientsRepository>();
 
-            services.AddSingleton<IMySqlSettings, MySqlClients>();
+            // Работа с контрактами
+            services.AddSingleton<ClientContractResponse>();
+            services.AddSingleton<ClientContractDbContext>();
+            services.AddSingleton<IRepository<int, ClientContract>, ClientContractsRepository>();
+
+            // Работа с отчетами
+            services.AddSingleton<InvoiceResponse>();
+            services.AddSingleton<InvoiceDbContext>();
+            services.AddSingleton<IRepository<int, Invoice>, InvoicesRepository>();
+
+            // Работа с сотрудниками
+            services.AddSingleton<EmployeeResponse>();
+            services.AddSingleton<EmployeeDbContext>();
+            services.AddSingleton<IRepository<int, Employee>, EmployeesRepository>();
 
             // Настриваю миграцию БД
+            services.AddSingleton<IMySqlSettings<Tables, ClientsColumns>, MySqlClients>();
+            services.AddSingleton<IMySqlSettings<Tables, ClientContractsColumns>, MySqlClientContracts>();
+            services.AddSingleton<IMySqlSettings<Tables, InvoicesColumns>, MySqlInvoices>();
+            services.AddSingleton<IMySqlSettings<Tables, EmployeesColumns>, MySqlEmployees>();
             services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb.AddSQLite() // Добавляем поддержку SQLite
-                    .WithGlobalConnectionString(new MySqlClients().ConnectionString) // Устанавливаем строку подключения
+                    .WithGlobalConnectionString(MySqlTables.ConnectionString) // Устанавливаем строку подключения
                     .ScanIn(typeof(Startup).Assembly).For.Migrations()) // Подсказываем, где искать класс с миграциями
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
         }
@@ -67,6 +94,7 @@ namespace WorkManager
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
+            // Создаю БД запуском миграции
             migrationRunner.MigrateUp();
         }
     }

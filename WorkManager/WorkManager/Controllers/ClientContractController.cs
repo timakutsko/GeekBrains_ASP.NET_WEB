@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,41 @@ namespace WorkManager.Controllers
     public class ClientContractController : Controller
     {
         private readonly ILogger<ClientContractController> _logger;
-        private ClientContractResponse _clientContractResponse = new ClientContractResponse();
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private ClientContractResponse _clientContractResponse;
 
-        public ClientContractController(ILogger<ClientContractController> logger)
+        public ClientContractController(ILogger<ClientContractController> logger, IServiceProvider provider)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientContractController).Name}");
+
+            _provider = provider;
+            _clientContractResponse = provider.GetService<ClientContractResponse>();
         }
+
+        /// <summary>
+        /// Создание нового контратка
+        /// </summary>
+        /// <returns>Созданный контракт</returns>
+        [HttpPost("register")]
+        public IActionResult RegisterElement([FromBody] ClientContract clientContract)
+        {
+            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового контракта. Параметры:" +
+                $"\nId: {clientContract.Id}" +
+                $"\nTitle: {clientContract.Title}" +
+                $"\nFullTime: {clientContract.FullTime}");
+
+            try
+            {
+                _clientContractResponse.Register(clientContract);
+                return Ok($"Контракт {clientContract.Title} был создан!");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+    }
 
         /// <summary>
 		/// Запрос списка контрактов
@@ -30,9 +59,15 @@ namespace WorkManager.Controllers
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода получения всех контрактов. Параметры:...");
 
-            IList<ClientContract> allElements = _clientContractResponse.GetAllData();
-
-            return Ok();
+            try
+            {
+                IReadOnlyDictionary<int, ClientContract> resp = _clientContractResponse.GetAllData();
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -59,35 +94,21 @@ namespace WorkManager.Controllers
         }
 
         /// <summary>
-        /// Создание нового контратка
-        /// </summary>
-        /// <returns>Созданный контракт</returns>
-        [HttpPost("register")]
-        public IActionResult RegisterElement()
-        {
-            _logger.LogInformation("\n[MyInfo]: Вызов метода создания нового контракта. Параметры:...");
-
-            ClientContract newElement = _clientContractResponse.Register();
-
-            return Ok(newElement);
-        }
-
-        /// <summary>
         /// Обновление контратка по id
         /// </summary>
         /// <returns>Обновленный контракт</returns>
-        [HttpPut("update/{id}")]
-        public IActionResult UpdateById([FromRoute] int id)
+        [HttpPut("update/{id}/{reqColumnName}/{value}")]
+        public IActionResult UpdateById([FromRoute] int id, [FromRoute] string reqColumnName, string value)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода обновления контракта по id. Параметры:" +
-                $"id = {id}"
-                );
+                $"\nId для обновления: {id}" +
+                $"\nИмя парамтера для обновления: {reqColumnName}" +
+                $"\nЗначение для обновления: {value}");
 
             try
             {
-                ClientContract updateElementt = _clientContractResponse.UpdateById(id);
-                
-                return Ok(updateElementt);
+                _clientContractResponse.UpdateById(id, reqColumnName, value);
+                return Ok($"Контракту с id {id} был обновлен параметр {reqColumnName} на значение {value}!");
             }
             catch (Exception ex)
             {
@@ -99,7 +120,7 @@ namespace WorkManager.Controllers
         /// Удаление контратка по id
         /// </summary>
         /// <returns>Сообщение об удалении</returns>
-        [HttpPut("delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteById([FromRoute] int id)
         {
             _logger.LogInformation("\n[MyInfo]: Вызов метода удаления контракта по id. Параметры:" +
@@ -110,7 +131,7 @@ namespace WorkManager.Controllers
             {
                 _clientContractResponse.DeleteById(id);
                 
-                return Ok("Contract have been deleted!");
+                return Ok($"Контракт с id{id} был успешно удален!");
             }
             catch (Exception ex)
             {

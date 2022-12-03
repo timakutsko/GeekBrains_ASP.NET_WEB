@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace WorkManager.MySQLsettings
 {
 	/// <summary> Ключи имен рядов </summary>
-	public enum Columns
+	public enum ClientsColumns
 	{
 		Id,
 		FirstName,
@@ -15,35 +15,26 @@ namespace WorkManager.MySQLsettings
 		Age,
 		//ClientContract,
 		Company,
+		IsDeleted
 	}
 
 	/// <summary>Класс для хранения настроек базы данных</summary>
-	public class MySqlClients : MySqlTables, IMySqlSettings
+	public class MySqlClients : MySqlTables, IMySqlSettings<Tables, ClientsColumns>
 	{
 		/// <summary>Словарь для хранения имен рядов в таблицах</summary>
-		private readonly Dictionary<Columns, string> _rowsNames = new Dictionary<Columns, string>
+		private readonly Dictionary<ClientsColumns, string> _rowsNames = new Dictionary<ClientsColumns, string>
 		{
-			{Columns.Id, "id" },
-			{Columns.FirstName, "firstName" },
-			{Columns.LastName, "lastName" },
-			{Columns.Email, "email" },
-			{Columns.Age, "age" },
+			{ClientsColumns.Id, "Id" },
+			{ClientsColumns.FirstName, "FirstName" },
+			{ClientsColumns.LastName, "LastName" },
+			{ClientsColumns.Email, "Email" },
+			{ClientsColumns.Age, "Age" },
 			//{Columns.ClientContract, "clientContract" },
-			{Columns.Company, "company" },
+			{ClientsColumns.Company, "Company" },
+			{ClientsColumns.IsDeleted, "IsDeleted" },
 		};
 
-		/// <summary> Строка для подключения к базе данных </summary>
-		private readonly string _connectionString = @"Data Source=WorkManager.db; Version=3;Pooling=True;Max Pool Size=100;";
-
-		public string ConnectionString
-		{
-			get
-			{
-				return _connectionString;
-			}
-		}
-
-		public string this[Columns key]
+		public string this[ClientsColumns key]
 		{
 			get
 			{

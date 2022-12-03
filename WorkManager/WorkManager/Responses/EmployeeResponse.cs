@@ -1,19 +1,49 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using WorkManager.DAL.Interfaces;
 using WorkManager.DAL.Models;
-using WorkManager.WorkManagerExceptions;
+using WorkManager.Repositories.Interfaces;
 
 namespace WorkManager.Responses
 {
     public class EmployeeResponse
     {
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private readonly IRepository<int, Employee> _repository;
+
+        public EmployeeResponse(IServiceProvider provider)
+        {
+            _provider = provider;
+            _repository = _provider.GetService<IRepository<int, Employee>>();
+        }
+
+        /// <summary>
+            /// Создание сотрудника в ответ серверу
+            /// </summary>
+        public void Register(Employee entity)
+        {
+            if (!_repository.Create(entity))
+            {
+                throw new Exception("Can't create a employee. Check out input data");
+            }
+        }
+
         /// <summary>
         /// Создание списка всех сотрудников в ответ серверу
         /// </summary>
-        public IList<Employee> GetAllData()
+        public IReadOnlyDictionary<int, Employee> GetAllData()
         {
-            IList<Employee> allElems = new List<Employee>();
-            return allElems;
+            IReadOnlyDictionary<int, Employee> allElems = _repository.Get();
+            if (allElems != null)
+            {
+                return allElems;
+            }
+            else
+            {
+                throw new Exception("Bad request to repo.");
+            }
         }
 
         /// <summary>
@@ -21,32 +51,25 @@ namespace WorkManager.Responses
         /// </summary>
         public Employee GetById(int id)
         {
-            //stub without logic
-            Employee client = SearchClientContractById(id);
-            if (client != null)
+            Employee entity = _repository.GetById(id);
+            if (entity != null)
             {
-                return client;
+                return entity;
             }
             else
             {
-                throw new EmployeeNotFoundException(id.ToString());
+                throw new Exception($"Employee with id: {id} not found. Maybe it's dosen't exsist?");
             }
         }
 
         /// <summary>
         /// Обновление сотрудника в ответ серверу
         /// </summary>
-        public Employee UpdateById(int id)
+        public void UpdateById(int id, string reqColumnName, string value)
         {
-            //stub without logic
-            Employee client = SearchClientContractById(id);
-            if (client != null)
+            if (!_repository.UpdateById(id, reqColumnName, value))
             {
-                return client;
-            }
-            else
-            {
-                throw new EmployeeNotFoundException(id.ToString());
+                throw new Exception($"Employee with id: {id} can not update! Maybe it's dosen't exsist or input params are faild?");
             }
         }
 
@@ -55,28 +78,9 @@ namespace WorkManager.Responses
         /// </summary>
         public void DeleteById(int id)
         {
-            //stub without logic
-        }
-
-        /// <summary>
-        /// Создание сотрудника в ответ серверу
-        /// </summary>
-        public Employee Register()
-        {
-            Employee registerElement = new Employee();
-            return registerElement;
-        }
-
-        private Employee SearchClientContractById(int id)
-        {
-            //stub without logic
-            if (id != 1)
+            if (!_repository.DeleteById(id))
             {
-                return new Employee();
-            }
-            else
-            {
-                return null;
+                throw new Exception($"Employee with id: {id} can not delete! Maybe it's dosen't exsist?");
             }
         }
     }

@@ -12,6 +12,6 @@ namespace WorkManager.DAL.Interfaces
         /// <summary>
         /// Потраченное время сотрудника
         /// </summary>
-        public DateTimeOffset SpendingTime { get; }
+        public TimeSpan SpendingTime { get; }
     }
 }

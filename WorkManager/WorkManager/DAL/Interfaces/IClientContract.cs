@@ -18,5 +18,10 @@ namespace WorkManager.DAL.Interfaces
         /// Общее время на выполнение контратка
         /// </summary>
         public DateTimeOffset FullTime { get; }
+
+        /// <summary>
+        /// Проверка на удаление контракта (архивация)
+        /// </summary>
+        public bool IsDeleted { get; set; }
     }
 }

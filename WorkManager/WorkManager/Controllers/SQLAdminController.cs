@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using WorkManager.DAL.Models;
 using WorkManager.DAL.Repositories;
@@ -13,13 +15,20 @@ namespace WorkManager.Controllers
     public class SQLAdminController : Controller
     {
         private readonly ILogger<SQLAdminController> _logger;
-        private CreateDefaultClients _createDefaultClients = new CreateDefaultClients();
 
-        public SQLAdminController(ILogger<SQLAdminController> logger)
+        // Инжектируем DI провайдер
+        private readonly IServiceProvider _provider;
+        private CreateDefaultClients _createDefaultClients;
+
+        public SQLAdminController(ILogger<SQLAdminController> logger, IServiceProvider provider)
         {
             _logger = logger;
-            _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(InvoiceController).Name}");
+            _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(ClientController).Name}");
+
+            _provider = provider;
+            _createDefaultClients = provider.GetService<CreateDefaultClients>();
         }
+
 
         /// <summary>
 		/// Создание БД по ДЗ №2

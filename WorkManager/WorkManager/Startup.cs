@@ -18,6 +18,8 @@ using WorkManager.Responses;
 using FluentValidation;
 using WorkManager.Requests;
 using WorkManager.Models.Validators;
+using WorkManager.Services;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager
 {
@@ -33,12 +35,17 @@ namespace WorkManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+#if DEBUG_GRPC
+            services.AddGrpc();
+            services.AddScoped<DictionariesClientService>();
+#endif
 
             services.AddControllersWithViews();
             
+            services.AddCors();
+
             // Настройка DB Context
-            services.AddDbContext<WorkManagerDbContext>(options =>
+            services.AddDbContext<IDbContext, WorkManagerDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("WorkManagerDbContext"));
             });
@@ -52,24 +59,24 @@ namespace WorkManager
             services.AddScoped<CreateDefaultClients>();
 
             // Работа с пользователями
-            services.AddSingleton<AccountResponse>();
+            services.AddSingleton<IAccountResponse, AccountResponse>();
             services.AddSingleton<IUserRepository, AccountsRepository>();
 
             // Работа с клиентами
-            services.AddScoped<ClientResponse>();
-            services.AddScoped<IRepository<int, Client>, ClientsRepository>();
+            services.AddScoped<IResponse<Client>, ClientResponse>();
+            services.AddScoped<ClientsRepository>();
 
             // Работа с контрактами
-            services.AddScoped<ClientContractResponse>();
-            services.AddScoped<IRepository<int, ClientContract>, ClientContractsRepository>();
+            services.AddScoped<IResponse<ClientContract>, ClientContractResponse>();
+            services.AddScoped<ClientContractsRepository>();
 
             // Работа с отчетами
-            services.AddScoped<InvoiceResponse>();
-            services.AddScoped<IRepository<int, Invoice>, InvoicesRepository>();
+            services.AddScoped<IResponse<Invoice>, InvoiceResponse>();
+            services.AddScoped<InvoicesRepository>();
 
             // Работа с сотрудниками
-            services.AddScoped<EmployeeResponse>();
-            services.AddScoped<IRepository<int, Employee>, EmployeesRepository>();
+            services.AddScoped<IResponse<Employee>, EmployeeResponse>();
+            services.AddScoped<EmployeesRepository>();
 
             // Настриваю миграцию БД - работа с пользователями сервиса
             services.AddFluentMigratorCore()
@@ -161,6 +168,9 @@ namespace WorkManager
 
             app.UseEndpoints(endpoints =>
             {
+#if DEBUG_GRPC
+                endpoints.MapGrpcService<DictionariesClientService>();
+#endif                
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");

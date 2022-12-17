@@ -7,14 +7,14 @@ using WorkManager.Data.Models;
 
 namespace WorkManager.Repositories
 {
-    internal sealed class ClientsRepository : IRepository<int, Client>
+    public class ClientsRepository : IRepository<int, Client>
     {
         /// <summary>
         /// Контекст БД
         /// </summary>
-        private readonly WorkManagerDbContext _context;
+        private readonly IDbContext _context;
 
-        public ClientsRepository(WorkManagerDbContext dbContext)
+        public ClientsRepository(IDbContext dbContext)
         {
             _context = dbContext;
         }

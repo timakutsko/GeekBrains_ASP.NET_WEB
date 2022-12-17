@@ -4,7 +4,7 @@ using WorkManager.Tokens;
 
 namespace WorkManager.Responses
 {
-    internal class AuthenticateDto
+    public class AuthenticateDto
     {
         public AccountDto AccountDto { get; set; }
         

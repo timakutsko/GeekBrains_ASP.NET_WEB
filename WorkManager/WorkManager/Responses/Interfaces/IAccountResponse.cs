@@ -4,7 +4,7 @@ using WorkManager.Tokens;
 
 namespace WorkManager.Responses.Interfaces
 {
-    internal interface IAccountResponse
+    public interface IAccountResponse
     {
         /// <summary>
         /// Регистрация пользователя

@@ -7,7 +7,7 @@ using WorkManager.Data.Models;
 
 namespace WorkManager.Responses
 {
-    internal sealed class CreateDefaultClients
+    public class CreateDefaultClients
     {
         // Инжектируем DI провайдер
         private readonly IServiceProvider _provider;

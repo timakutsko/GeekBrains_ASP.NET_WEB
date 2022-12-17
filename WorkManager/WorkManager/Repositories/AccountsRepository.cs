@@ -8,7 +8,7 @@ using System;
 
 namespace WorkManager.Repositories
 {
-    internal sealed class AccountsRepository : IUserRepository
+    public class AccountsRepository : IUserRepository
     {
         /// <summary>
         /// Контекст БД

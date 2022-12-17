@@ -206,6 +206,21 @@
 				{
 					"name": "RegisterElement",
 					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -451,7 +466,7 @@
 			]
 		},
 		{
-			"name": "UserController",
+			"name": "AccauntController",
 			"item": [
 				{
 					"name": "Authenticate",
@@ -460,7 +475,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\r\n    \"Login\" : \"tkutsko\",\r\n    \"Password\" : \"123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -468,7 +483,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:5000/api/users/authenticate?login=tkutsko&password=123",
+							"raw": "http://localhost:5000/api/accounts/authenticate",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -476,18 +491,8 @@
 							"port": "5000",
 							"path": [
 								"api",
-								"users",
+								"accounts",
 								"authenticate"
-							],
-							"query": [
-								{
-									"key": "login",
-									"value": "tkutsko"
-								},
-								{
-									"key": "password",
-									"value": "123"
-								}
 							]
 						}
 					},
@@ -499,7 +504,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5000/api/users/refresh-token",
+							"raw": "http://localhost:5000/api/accounts/refresh-token",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -507,7 +512,7 @@
 							"port": "5000",
 							"path": [
 								"api",
-								"users",
+								"accounts",
 								"refresh-token"
 							]
 						}
@@ -519,8 +524,17 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Login\" : \"tkutsko\",\r\n    \"Password\" : \"qwerty123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:5000/api/users/registration?login=tkutsko&password=123",
+							"raw": "http://localhost:5000/api/accounts/registration",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -528,18 +542,29 @@
 							"port": "5000",
 							"path": [
 								"api",
-								"users",
+								"accounts",
 								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetSession",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/accounts/session",
+							"protocol": "http",
+							"host": [
+								"localhost"
 							],
-							"query": [
-								{
-									"key": "login",
-									"value": "tkutsko"
-								},
-								{
-									"key": "password",
-									"value": "123"
-								}
+							"port": "5000",
+							"path": [
+								"api",
+								"accounts",
+								"session"
 							]
 						}
 					},

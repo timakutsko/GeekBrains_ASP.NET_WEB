@@ -3,7 +3,7 @@ using WorkManager.Data.Models;
 
 namespace WorkManager.Repositories.Interfaces
 {
-    internal interface IUserRepository
+    public interface IUserRepository
     {
         /// <summary>
         /// Записывает пользователя в БД

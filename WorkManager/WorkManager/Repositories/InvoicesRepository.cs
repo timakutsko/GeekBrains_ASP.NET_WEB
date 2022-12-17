@@ -7,7 +7,7 @@ using WorkManager.Data.Models;
 
 namespace WorkManager.Repositories
 {
-    internal sealed class InvoicesRepository : IRepository<int, Invoice>
+    public class InvoicesRepository : IRepository<int, Invoice>
     {
         /// <summary>
         /// Контекст БД

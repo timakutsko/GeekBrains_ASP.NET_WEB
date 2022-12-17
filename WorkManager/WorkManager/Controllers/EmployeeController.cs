@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using WorkManager.Data.Models;
 using WorkManager.Responses;
+using WorkManager.Responses.Interfaces;
 
 namespace WorkManager.Controllers
 {
@@ -15,17 +16,15 @@ namespace WorkManager.Controllers
     public class EmployeeController : Controller
     {
         private readonly ILogger<EmployeeController> _logger;
-        // Инжектируем DI провайдер
-        private readonly IServiceProvider _provider;
-        private EmployeeResponse _response;
 
-        public EmployeeController(ILogger<EmployeeController> logger, IServiceProvider provider)
+        private readonly IResponse<Employee> _response;
+
+        public EmployeeController(ILogger<EmployeeController> logger, IResponse<Employee> response)
         {
             _logger = logger;
             _logger.LogInformation($"\n[MyInfo]: Вызов конструктора класса {typeof(EmployeeController).Name}");
 
-            _provider = provider;
-            _response = provider.GetService<EmployeeResponse>();
+            _response = response;
         }
 
         /// <summary>
